@@ -31,7 +31,28 @@ cd "$REPO"
 git fetch -q origin main || { log "ERROR fetch failed (offline?)"; exit 1; }
 TARGET=$(git rev-parse origin/main)
 CURRENT=$(cat "$STATE/deployed_sha" 2>/dev/null || echo none)
-[ "$TARGET" = "$CURRENT" ] && exit 0
+
+# Drift check (reconcile actual vs desired, not only new commits): after a WSL/Docker restart the
+# containers come back WITHOUT their containerlab links. If any link interface is missing, redeploy.
+drifted() {
+  [ -f "$REPO/build/ft-core/links.tsv" ] || return 1
+  grep -v '^#' "$REPO/build/ft-core/links.tsv" | while IFS=$'\t' read -r link a b _; do
+    for end in "$a" "$b"; do
+      docker exec "$P-${end%%:*}" ip link show "${end##*:}" >/dev/null 2>&1 || { echo "$link:$end"; return; }
+    done
+  done
+}
+if [ "$TARGET" = "$CURRENT" ]; then
+  missing=$(drifted)
+  [ -z "$missing" ] && exit 0
+  log "DRIFT running twin differs from main (missing $missing) -> redeploy"
+  if bash twin/deploy.sh >>"$LOG" 2>&1 && "$VENV/bin/python" -m pytest -q tests_live -p no:cacheprovider >>"$LOG" 2>&1; then
+    log "DONE drift repaired at $TARGET"
+  else
+    log "ERROR drift repair failed"
+  fi
+  exit 0
+fi
 
 log "NEW main $TARGET (deployed: $CURRENT): $(git log -1 --format=%s "$TARGET")"
 OLD_BUILD="$STATE/previous-build"
