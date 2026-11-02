@@ -11,4 +11,6 @@ mkdir -p /opt/fibertwin/secrets
 install -m 0440 -o root -g 65534 "$SRC" /opt/fibertwin/secrets/slack-webhook
 export SLACK_WEBHOOK_FILE=/opt/fibertwin/secrets/slack-webhook
 docker compose up -d --build
+# containers that were already running keep their old config: ask Prometheus to reload (lifecycle API)
+for _ in $(seq 1 30); do curl -sf -X POST http://localhost:9090/-/reload >/dev/null && break; sleep 1; done
 echo "Grafana http://localhost:3000   Prometheus http://localhost:9090   Alertmanager http://localhost:9093"
