@@ -1,0 +1,36 @@
+# FiberTwin-Ops Slice 1a: the IP core.
+# Ring R1-R2-R3-R4 + chord R1-R3 (every link has an alternate path), OSPF underlay + BFD,
+# iBGP full mesh (AS 65000), eBGP to an upstream (AS 65001). Two customer LANs, one "Internet" server.
+name: ft-core
+
+topology:
+  defaults:
+    kind: linux
+  kinds:
+    linux:
+      image: quay.io/frrouting/frr:10.2.1
+  nodes:
+    r1: { binds: [configs/r1/daemons:/etc/frr/daemons, configs/r1/frr.conf:/etc/frr/frr.conf, configs/r1/vtysh.conf:/etc/frr/vtysh.conf], labels: { graph-posX: "200", graph-posY: "150", graph-group: core } }
+    r2: { binds: [configs/r2/daemons:/etc/frr/daemons, configs/r2/frr.conf:/etc/frr/frr.conf, configs/r2/vtysh.conf:/etc/frr/vtysh.conf], labels: { graph-posX: "600", graph-posY: "150", graph-group: core } }
+    r3: { binds: [configs/r3/daemons:/etc/frr/daemons, configs/r3/frr.conf:/etc/frr/frr.conf, configs/r3/vtysh.conf:/etc/frr/vtysh.conf], labels: { graph-posX: "600", graph-posY: "500", graph-group: core } }
+    r4: { binds: [configs/r4/daemons:/etc/frr/daemons, configs/r4/frr.conf:/etc/frr/frr.conf, configs/r4/vtysh.conf:/etc/frr/vtysh.conf], labels: { graph-posX: "200", graph-posY: "500", graph-group: core } }
+    up1: { binds: [configs/up1/daemons:/etc/frr/daemons, configs/up1/frr.conf:/etc/frr/frr.conf, configs/up1/vtysh.conf:/etc/frr/vtysh.conf], labels: { graph-group: upstream } }
+    h1:
+      image: fibertwin/host:0.1
+      exec: ["ip addr add 100.64.2.10/24 dev eth1", "ip route replace default via 100.64.2.1"]
+    h3:
+      image: fibertwin/host:0.1
+      exec: ["ip addr add 100.64.3.10/24 dev eth1", "ip route replace default via 100.64.3.1"]
+    srv:
+      image: fibertwin/host:0.1
+      exec: ["ip addr add 203.0.113.10/24 dev eth1", "ip route replace default via 203.0.113.1", "iperf3 -s -D -p 5201", "iperf3 -s -D -p 5202", "iperf3 -s -D -p 5203"]
+  links:
+    - endpoints: ["r1:eth1", "r2:eth1"]   # L12 on fibre F12 (140 km)
+    - endpoints: ["r1:eth2", "r4:eth2"]   # L41 on fibre F41 (270 km)
+    - endpoints: ["r1:eth3", "r3:eth3"]   # L13 chord, lightpath over F12 + F23 (200 km)
+    - endpoints: ["r2:eth2", "r3:eth1"]   # L23 on fibre F23 (60 km)
+    - endpoints: ["r3:eth2", "r4:eth1"]   # L34 on fibre F34 (120 km)
+    - endpoints: ["r1:eth4", "up1:eth1"]  # eBGP upstream
+    - endpoints: ["up1:eth2", "srv:eth1"]
+    - endpoints: ["r2:eth3", "h1:eth1"]
+    - endpoints: ["r3:eth4", "h3:eth1"]
