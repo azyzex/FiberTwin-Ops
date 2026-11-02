@@ -15,11 +15,11 @@ topology:
     image: quay.io/frrouting/frr:10.2.1
   nodes:
     r1:
-      binds: [r1/daemons:/etc/frr/daemons, r1/frr.conf:/etc/frr/frr.conf]
+      binds: [r1/daemons:/etc/frr/daemons, r1/frr.conf:/etc/frr/frr.conf, r1/vtysh.conf:/etc/frr/vtysh.conf]
     r2:
-      binds: [r2/daemons:/etc/frr/daemons, r2/frr.conf:/etc/frr/frr.conf]
+      binds: [r2/daemons:/etc/frr/daemons, r2/frr.conf:/etc/frr/frr.conf, r2/vtysh.conf:/etc/frr/vtysh.conf]
     r3:
-      binds: [r3/daemons:/etc/frr/daemons, r3/frr.conf:/etc/frr/frr.conf]
+      binds: [r3/daemons:/etc/frr/daemons, r3/frr.conf:/etc/frr/frr.conf, r3/vtysh.conf:/etc/frr/vtysh.conf]
   links:
     - endpoints: ["r1:eth1", "r2:eth1"]   # 10.1.12.0/30
     - endpoints: ["r1:eth2", "r3:eth1"]   # 10.1.13.0/30

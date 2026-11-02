@@ -19,6 +19,9 @@ done
 for r in r1 r2 r3; do echo "--- $r"; vt $r "show ip ospf neighbor"; done
 echo "--- r1 routing table"; vt r1 "show ip route ospf"
 
+# "Full" neighbours come first; SPF then installs the routes a moment later. Wait for the route itself.
+until docker exec $P-r1 ip route get 10.0.0.3 2>/dev/null | grep -q via; do sleep 0.2; done
+
 say "3. Ping r3's loopback from r1's loopback (crosses the network)"
 docker exec $P-r1 ping -c 5 -I 10.0.0.1 10.0.0.3
 
