@@ -1,0 +1,13 @@
+[Unit]
+Description=FiberTwin pull-based GitOps deployer (one run)
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deployer
+Group=deployer
+ExecStart=/opt/fibertwin/repo/deployer/deployer.sh
+# the deployer only needs its own folder and docker; everything else stays read-only to it
+ProtectSystem=full
+ReadWritePaths=/opt/fibertwin /var/run/docker.sock /tmp
