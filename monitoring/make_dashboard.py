@@ -148,6 +148,12 @@ def build() -> dict:
                  {"h": 8, "w": 8, "x": 8, "y": 22}),
         ts_panel(8, "Probe loss", "ft_probe_loss_ratio", "{{src}}→{{dst}} {{class}}", "percentunit",
                  {"h": 8, "w": 8, "x": 16, "y": 22}, loss_t),
+        ts_panel(9, "Optical: OSNR margin per link (cliff at 0 dB, warning at 3 dB)", "ft_optical_margin_db", "{{link}}", "dB",
+                 {"h": 9, "w": 12, "x": 0, "y": 30},
+                 {"mode": "absolute", "steps": [{"color": "red", "value": None}, {"color": "orange", "value": 0},
+                                                {"color": "green", "value": 3}]}),
+        ts_panel(10, "Optical: received power per link", "ft_optical_rx_power_dbm", "{{link}}", "dBm",
+                 {"h": 9, "w": 12, "x": 12, "y": 30}),
     ]
     return {
         "uid": "fibertwin-noc", "title": "FiberTwin NOC", "tags": ["fibertwin"], "timezone": "browser",

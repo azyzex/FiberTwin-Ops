@@ -10,6 +10,17 @@ services:
       - ${FT_ROOT}/sot:/ft/sot:ro
     restart: unless-stopped
     mem_limit: 128m
+  optical:
+    # the modelled L0 layer: computes optics and applies the resulting loss to the twin
+    build: { context: .., dockerfile: optics/Dockerfile }
+    image: fibertwin/optical-agent:0.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${FT_ROOT}/build:/ft/build:ro
+      - ${FT_ROOT}/sot:/ft/sot:ro
+    ports: ["127.0.0.1:8081:8081"]
+    restart: unless-stopped
+    mem_limit: 128m
   prometheus:
     image: prom/prometheus:v3.5.0
     command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d", "--web.enable-lifecycle"]

@@ -12,6 +12,9 @@ meta:
   delay_us_per_km: 5          # propagation in fibre
   max_utilisation_pct: 80     # capacity what-if threshold (CI)
   bfd: { profile: core, detect_multiplier: 3, interval_ms: 300 }
+  # optical layer (plan §6.1): per-channel launch power, fibre attenuation, amplifier noise figure,
+  # receiver bandwidths, implementation penalty, patch loss before the receiver, receiver sensitivity
+  optics: { p_ch_dbm: 0.0, alpha_db_km: 0.2, nf_db: 5.0, bo_ghz: 12.5, be_ghz: 7.0, penalty_db: 2.0, patch_loss_db: 1.0, sensitivity_dbm: -28.0 }
 
 routers:
   r1: { id: 1, site: Tunis,  role: core, pos: { x: 200, y: 150 } }

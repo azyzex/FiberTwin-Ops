@@ -7,14 +7,18 @@ groups:
       # utilisation of each link (worst direction)
       - record: ft:link_util_ratio
         expr: max by (link) (rate(ft_iface_tx_bytes_total[30s]) * 8) / on (link) ft_link_capacity_bps
-      # map colour: 0 ok, 1 warning, 2 critical
+      # map colour: 0 ok, 1 warning, 2 critical. Every term is reduced to {link} so they add up;
+      # a missing term counts as healthy (the "or" fallback), never as "drop this link".
+      - record: ft:link_zero
+        expr: max by (link) (ft_link_capacity_bps) * 0
       - record: ft:link_health
         expr: |
           clamp_max(
-              2 * ((ft:link_loss_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.01)
-            + ((ft:link_loss_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.001)
-            + ((ft:link_util_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.8)
-            + 2 * (min by (link) (ft_iface_up) == bool 0)
+              2 * ((ft:link_loss_ratio or ft:link_zero) > bool 0.01)
+            + ((ft:link_loss_ratio or ft:link_zero) > bool 0.001)
+            + ((ft:link_util_ratio or ft:link_zero) > bool 0.8)
+            + 2 * ((min by (link) (ft_iface_up)) == bool 0)
+            + ((max by (link) (ft_optical_margin_db) or (ft:link_zero + 99)) < bool 3)
           , 2)
 
   - name: fibertwin-alerts
@@ -43,6 +47,20 @@ groups:
         labels: { severity: critical }
         annotations:
           summary: "{{ $labels.node }} has fewer OSPF Full neighbours than the source of truth expects"
+      # optical layer: act on the MARGIN, before any packet is lost
+      - alert: FtOsnrMarginLow
+        expr: ft_optical_margin_db < 3
+        for: 15s
+        labels: { severity: warning }
+        annotations:
+          summary: "OSNR margin {{ $value | printf \"%.1f\" }} dB on {{ $labels.link }} (cliff at 0 dB)"
+      # trend: at the current slope, the margin reaches the cliff within 10 minutes
+      - alert: FtOsnrMarginTrend
+        expr: (predict_linear(ft_optical_margin_db[2m], 600) < 0) and (deriv(ft_optical_margin_db[2m]) < -0.005)
+        for: 30s
+        labels: { severity: warning }
+        annotations:
+          summary: "OSNR margin on {{ $labels.link }} falling: cliff in < 10 min at this rate"
       # symptom seen by customers (end to end); suppressed in Alertmanager when a link alert explains it
       - alert: FtPathLoss
         expr: max by (src, dst) (ft_probe_loss_ratio) > 0.02
