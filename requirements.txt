@@ -5,3 +5,4 @@ pyyaml==6.0.2
 pytest==8.4.1
 jsonschema==4.26.0
 yamllint==1.37.1
+prometheus-client==0.22.1

@@ -1,0 +1,61 @@
+groups:
+  - name: fibertwin-recording
+    rules:
+      # packet loss caused on each link by its netem impairment (worst direction), over the last 15 s (3 scrapes: faster, slightly noisier)
+      - record: ft:link_loss_ratio
+        expr: max by (link) (rate(ft_netem_dropped_total[15s]) / ((rate(ft_netem_sent_packets_total[15s]) + rate(ft_netem_dropped_total[15s])) > 0))
+      # utilisation of each link (worst direction)
+      - record: ft:link_util_ratio
+        expr: max by (link) (rate(ft_iface_tx_bytes_total[30s]) * 8) / on (link) ft_link_capacity_bps
+      # map colour: 0 ok, 1 warning, 2 critical
+      - record: ft:link_health
+        expr: |
+          clamp_max(
+              2 * ((ft:link_loss_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.01)
+            + ((ft:link_loss_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.001)
+            + ((ft:link_util_ratio or on (link) ft_link_capacity_bps * 0) > bool 0.8)
+            + 2 * (min by (link) (ft_iface_up) == bool 0)
+          , 2)
+
+  - name: fibertwin-alerts
+    rules:
+      - alert: FtLinkPacketLoss
+        expr: ft:link_loss_ratio > 0.01
+        for: 15s
+        labels: { severity: critical }
+        annotations:
+          summary: "Packet loss {{ $value | humanizePercentage }} on link {{ $labels.link }}"
+      - alert: FtLinkDown
+        expr: min by (link) (ft_iface_up) == 0
+        for: 5s
+        labels: { severity: critical }
+        annotations:
+          summary: "Link {{ $labels.link }} is down"
+      - alert: FtLinkUtilisationHigh
+        expr: ft:link_util_ratio > 0.8
+        for: 30s
+        labels: { severity: warning }
+        annotations:
+          summary: "Link {{ $labels.link }} at {{ $value | humanizePercentage }} of capacity"
+      - alert: FtOspfAdjacencyMissing
+        expr: ft_ospf_full_neighbors < ft_ospf_expected_neighbors
+        for: 20s
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.node }} has fewer OSPF Full neighbours than the source of truth expects"
+      # symptom seen by customers (end to end); suppressed in Alertmanager when a link alert explains it
+      - alert: FtPathLoss
+        expr: max by (src, dst) (ft_probe_loss_ratio) > 0.02
+        for: 30s
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.src }} -> {{ $labels.dst }} probes lose {{ $value | humanizePercentage }}"
+      # trend, not threshold: latency of the last minute vs the previous 15 minutes
+      - alert: FtLatencyRising
+        expr: |
+          (avg_over_time(ft_probe_rtt_ms[1m]) > 1.5 * avg_over_time(ft_probe_rtt_ms[15m] offset 1m))
+          and (avg_over_time(ft_probe_rtt_ms[1m]) - avg_over_time(ft_probe_rtt_ms[15m] offset 1m) > 1)
+        for: 1m
+        labels: { severity: warning }
+        annotations:
+          summary: "Latency rising on {{ $labels.src }} -> {{ $labels.dst }} ({{ $labels.class }})"
