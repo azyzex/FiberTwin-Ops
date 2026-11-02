@@ -1,0 +1,1001 @@
+{
+ "uid": "fibertwin-noc",
+ "title": "FiberTwin NOC",
+ "tags": [
+  "fibertwin"
+ ],
+ "timezone": "browser",
+ "refresh": "5s",
+ "time": {
+  "from": "now-15m",
+  "to": "now"
+ },
+ "schemaVersion": 41,
+ "version": 1,
+ "editable": true,
+ "panels": [
+  {
+   "id": 1,
+   "type": "canvas",
+   "title": "NOC map: IP core (colour = link health)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 15,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft:link_health",
+     "legendFormat": "{{link}}",
+     "instant": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       },
+       {
+        "color": "red",
+        "value": 2
+       }
+      ]
+     },
+     "min": 0,
+     "max": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "inlineEditing": false,
+    "showAdvancedTypes": true,
+    "panZoom": false,
+    "infinitePan": false,
+    "root": {
+     "type": "frame",
+     "name": "root",
+     "elements": [
+      {
+       "type": "rectangle",
+       "name": "lbl-L12",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 11,
+        "text": {
+         "mode": "fixed",
+         "fixed": "L12 \u00b7 140 km"
+        }
+       },
+       "background": {
+        "color": {
+         "field": "L12",
+         "fixed": "#808080"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "transparent"
+        },
+        "radius": 4
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 324.0,
+        "top": 33.5,
+        "width": 92,
+        "height": 20,
+        "rotation": 0
+       }
+      },
+      {
+       "type": "rectangle",
+       "name": "lbl-L41",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 11,
+        "text": {
+         "mode": "fixed",
+         "fixed": "L41 \u00b7 270 km"
+        }
+       },
+       "background": {
+        "color": {
+         "field": "L41",
+         "fixed": "#808080"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "transparent"
+        },
+        "radius": 4
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 212.0,
+        "top": 206.25,
+        "width": 92,
+        "height": 20,
+        "rotation": 0
+       }
+      },
+      {
+       "type": "rectangle",
+       "name": "lbl-L13",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 11,
+        "text": {
+         "mode": "fixed",
+         "fixed": "L13 \u00b7 200 km"
+        }
+       },
+       "background": {
+        "color": {
+         "field": "L13",
+         "fixed": "#808080"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "transparent"
+        },
+        "radius": 4
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 376.0,
+        "top": 184.25,
+        "width": 92,
+        "height": 20,
+        "rotation": 0
+       }
+      },
+      {
+       "type": "rectangle",
+       "name": "lbl-L23",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 11,
+        "text": {
+         "mode": "fixed",
+         "fixed": "L23 \u00b7 60 km"
+        }
+       },
+       "background": {
+        "color": {
+         "field": "L23",
+         "fixed": "#808080"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "transparent"
+        },
+        "radius": 4
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 552.0,
+        "top": 206.25,
+        "width": 92,
+        "height": 20,
+        "rotation": 0
+       }
+      },
+      {
+       "type": "rectangle",
+       "name": "lbl-L34",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 11,
+        "text": {
+         "mode": "fixed",
+         "fixed": "L34 \u00b7 120 km"
+        }
+       },
+       "background": {
+        "color": {
+         "field": "L34",
+         "fixed": "#808080"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "transparent"
+        },
+        "radius": 4
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 324.0,
+        "top": 331.0,
+        "width": 92,
+        "height": 20,
+        "rotation": 0
+       }
+      },
+      {
+       "type": "rectangle",
+       "name": "R1",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 16,
+        "text": {
+         "mode": "fixed",
+         "fixed": "R1\nTunis"
+        }
+       },
+       "background": {
+        "color": {
+         "fixed": "#1e293b"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "#38bdf8"
+        },
+        "width": 2,
+        "radius": 8
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 157.0,
+        "top": 45.5,
+        "width": 86,
+        "height": 44,
+        "rotation": 0
+       },
+       "connections": [
+        {
+         "source": {
+          "x": 1.0,
+          "y": 0.0
+         },
+         "target": {
+          "x": -1.0,
+          "y": 0.0
+         },
+         "targetName": "R2",
+         "color": {
+          "field": "L12",
+          "fixed": "#808080"
+         },
+         "size": {
+          "fixed": 7,
+          "min": 2,
+          "max": 10
+         },
+         "path": "straight",
+         "direction": "none"
+        },
+        {
+         "source": {
+          "x": 0.0,
+          "y": -1.0
+         },
+         "target": {
+          "x": 0.0,
+          "y": 1.0
+         },
+         "targetName": "R4",
+         "color": {
+          "field": "L41",
+          "fixed": "#808080"
+         },
+         "size": {
+          "fixed": 7,
+          "min": 2,
+          "max": 10
+         },
+         "path": "straight",
+         "direction": "none"
+        },
+        {
+         "source": {
+          "x": 1.0,
+          "y": -0.875
+         },
+         "target": {
+          "x": -1.0,
+          "y": 0.875
+         },
+         "targetName": "R3",
+         "color": {
+          "field": "L13",
+          "fixed": "#808080"
+         },
+         "size": {
+          "fixed": 7,
+          "min": 2,
+          "max": 10
+         },
+         "path": "straight",
+         "direction": "none"
+        }
+       ]
+      },
+      {
+       "type": "rectangle",
+       "name": "R2",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 16,
+        "text": {
+         "mode": "fixed",
+         "fixed": "R2\nSousse"
+        }
+       },
+       "background": {
+        "color": {
+         "fixed": "#1e293b"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "#38bdf8"
+        },
+        "width": 2,
+        "radius": 8
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 497.0,
+        "top": 45.5,
+        "width": 86,
+        "height": 44,
+        "rotation": 0
+       },
+       "connections": [
+        {
+         "source": {
+          "x": 0.0,
+          "y": -1.0
+         },
+         "target": {
+          "x": 0.0,
+          "y": 1.0
+         },
+         "targetName": "R3",
+         "color": {
+          "field": "L23",
+          "fixed": "#808080"
+         },
+         "size": {
+          "fixed": 7,
+          "min": 2,
+          "max": 10
+         },
+         "path": "straight",
+         "direction": "none"
+        }
+       ]
+      },
+      {
+       "type": "rectangle",
+       "name": "R3",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 16,
+        "text": {
+         "mode": "fixed",
+         "fixed": "R3\nMahdia"
+        }
+       },
+       "background": {
+        "color": {
+         "fixed": "#1e293b"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "#38bdf8"
+        },
+        "width": 2,
+        "radius": 8
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 497.0,
+        "top": 343.0,
+        "width": 86,
+        "height": 44,
+        "rotation": 0
+       },
+       "connections": [
+        {
+         "source": {
+          "x": -1.0,
+          "y": 0.0
+         },
+         "target": {
+          "x": 1.0,
+          "y": 0.0
+         },
+         "targetName": "R4",
+         "color": {
+          "field": "L34",
+          "fixed": "#808080"
+         },
+         "size": {
+          "fixed": 7,
+          "min": 2,
+          "max": 10
+         },
+         "path": "straight",
+         "direction": "none"
+        }
+       ]
+      },
+      {
+       "type": "rectangle",
+       "name": "R4",
+       "config": {
+        "align": "center",
+        "valign": "middle",
+        "color": {
+         "fixed": "#ffffff"
+        },
+        "size": 16,
+        "text": {
+         "mode": "fixed",
+         "fixed": "R4\nSfax"
+        }
+       },
+       "background": {
+        "color": {
+         "fixed": "#1e293b"
+        }
+       },
+       "border": {
+        "color": {
+         "fixed": "#38bdf8"
+        },
+        "width": 2,
+        "radius": 8
+       },
+       "constraint": {
+        "horizontal": "left",
+        "vertical": "top"
+       },
+       "placement": {
+        "left": 157.0,
+        "top": 343.0,
+        "width": 86,
+        "height": 44,
+        "rotation": 0
+       },
+       "connections": []
+      }
+     ],
+     "background": {
+      "color": {
+       "fixed": "transparent"
+      }
+     },
+     "border": {
+      "color": {
+       "fixed": "transparent"
+      }
+     },
+     "constraint": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "placement": {
+      "left": 0,
+      "top": 0,
+      "width": 100,
+      "height": 100,
+      "rotation": 0
+     }
+    }
+   }
+  },
+  {
+   "id": 2,
+   "type": "table",
+   "title": "Firing alerts",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 7,
+    "w": 12,
+    "x": 12,
+    "y": 0
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ALERTS{alertstate=\"firing\"}",
+     "format": "table",
+     "instant": true
+    }
+   ],
+   "transformations": [
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "Value": true,
+       "__name__": true,
+       "alertstate": true
+      }
+     }
+    }
+   ],
+   "options": {
+    "showHeader": true
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Control plane (actual / expected OSPF Full)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 7,
+    "w": 12,
+    "x": 12,
+    "y": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_ospf_full_neighbors - ft_ospf_expected_neighbors",
+     "legendFormat": "{{node}} OSPF \u0394"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_bgp_established",
+     "legendFormat": "{{node}} BGP"
+    },
+    {
+     "refId": "C",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_bfd_up",
+     "legendFormat": "{{node}} BFD"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "background",
+    "textMode": "value_and_name",
+    "graphMode": "none"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byFrameRefID",
+       "options": "A"
+      },
+      "properties": [
+       {
+        "id": "thresholds",
+        "value": {
+         "mode": "absolute",
+         "steps": [
+          {
+           "color": "red",
+           "value": null
+          },
+          {
+           "color": "green",
+           "value": 0
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 4,
+   "type": "timeseries",
+   "title": "Link utilisation (worst direction)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 14
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft:link_util_ratio",
+     "legendFormat": "{{link}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "axisSoftMax": 1
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 0.8
+       }
+      ]
+     },
+     "max": 1,
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Link packet loss (from the netem counters)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 14
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft:link_loss_ratio",
+     "legendFormat": "{{link}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "axisSoftMax": 0.05
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 0.01
+       }
+      ]
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Probe RTT per path and class",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 22
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_probe_rtt_ms",
+     "legendFormat": "{{src}}\u2192{{dst}} {{class}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Probe jitter (mdev)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 22
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_probe_jitter_ms",
+     "legendFormat": "{{src}}\u2192{{dst}} {{class}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ms",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Probe loss",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 22
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_probe_loss_ratio",
+     "legendFormat": "{{src}}\u2192{{dst}} {{class}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "axisSoftMax": 0.05
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 0.01
+       }
+      ]
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  }
+ ],
+ "annotations": {
+  "list": []
+ }
+}

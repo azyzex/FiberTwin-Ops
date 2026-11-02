@@ -22,7 +22,7 @@ jobs:
       - name: Render configs (Nornir + Jinja2)
         run: python -m netgen.render
       - name: Unit tests (SoT rules, golden configs, capacity + SRLG what-if)
-        run: pytest -q tests
+        run: pytest -q tests monitoring/exporter/test_parsing.py
       - name: Diff of generated configs vs main (what this change does to the routers)
         if: github.event_name == 'pull_request'
         run: |
