@@ -1,0 +1,53 @@
+# FiberTwin-Ops source of truth (Slice 1b).
+# The ONLY place the intended network is described. Router configs, the containerlab topology,
+# link shaping and the portal's topology.json are all generated from this file.
+# To change the network: edit this file in a pull request. CI tests the change on a temporary twin.
+
+meta:
+  name: ft-core
+  core_asn: 65000
+  frr_image: quay.io/frrouting/frr:10.2.1
+  host_image: fibertwin/host:0.1
+  capacity_mbps: 100          # per core link, 1:1000 scale (= 100 Gbit/s)
+  delay_us_per_km: 5          # propagation in fibre
+  max_utilisation_pct: 80     # capacity what-if threshold (CI)
+  bfd: { profile: core, detect_multiplier: 3, interval_ms: 300 }
+
+routers:
+  r1: { id: 1, site: Tunis,  role: core, pos: { x: 200, y: 150 } }
+  r2: { id: 2, site: Sousse, role: core, pos: { x: 600, y: 150 } }
+  r3: { id: 3, site: Mahdia, role: core, pos: { x: 600, y: 500 } }
+  r4: { id: 4, site: Sfax,   role: core, pos: { x: 200, y: 500 } }
+
+# L0: physical fibres between sites
+fibres:
+  F12: { a: r1, b: r2, length_km: 140, spans: 2 }
+  F23: { a: r2, b: r3, length_km: 60,  spans: 1 }
+  F34: { a: r3, b: r4, length_km: 120, spans: 2 }
+  F41: { a: r4, b: r1, length_km: 270, spans: 4 }
+
+# L3: IP links between core routers. "fibres" = the lightpath's route (from the RWA code), so
+# links that share a fibre share a fate (SRLG). L13 has no fibre of its own: it rides F12 + F23.
+links:
+  L12: { a: r1, a_if: eth1, b: r2, b_if: eth1, subnet: 10.1.12.0/30, ospf_cost: 10, fibres: [F12], wavelength: 1 }
+  L41: { a: r1, a_if: eth2, b: r4, b_if: eth2, subnet: 10.1.14.0/30, ospf_cost: 10, fibres: [F41], wavelength: 1 }
+  L13: { a: r1, a_if: eth3, b: r3, b_if: eth3, subnet: 10.1.13.0/30, ospf_cost: 10, fibres: [F12, F23], wavelength: 2 }
+  L23: { a: r2, a_if: eth2, b: r3, b_if: eth1, subnet: 10.1.23.0/30, ospf_cost: 10, fibres: [F23], wavelength: 1 }
+  L34: { a: r3, a_if: eth2, b: r4, b_if: eth1, subnet: 10.1.34.0/30, ospf_cost: 10, fibres: [F34], wavelength: 1 }
+
+upstreams:
+  up1:
+    asn: 65001
+    router_id: 10.9.9.9
+    attach: { router: r1, router_if: eth4, up_if: eth1, subnet: 10.2.1.0/30 }
+    server: { name: srv, up_if: eth2, subnet: 203.0.113.0/24, iperf_ports: [5201, 5202, 5203] }
+
+customers:
+  h1: { router: r2, router_if: eth3, subnet: 100.64.2.0/24 }
+  h3: { router: r3, router_if: eth4, subnet: 100.64.3.0/24 }
+
+# Traffic demands (Mbit/s), used by the capacity what-if in CI and by traffic.sh
+demands:
+  - { src: srv, dst: h1, mbps: 30 }
+  - { src: srv, dst: h3, mbps: 40 }
+  - { src: h1,  dst: h3, mbps: 20 }

@@ -14,3 +14,4 @@ clab-*/
 *.secret*
 portal/test-results/
 portal/playwright-report/
+build/

@@ -1,0 +1,70 @@
+frr defaults traditional
+hostname {{ r.name }}
+service integrated-vtysh-config
+!
+interface lo
+ ip address {{ r.loopback }}
+ ip ospf area 0
+!
+{% for i in r.ifaces if i.kind == 'core' %}
+interface {{ i.name }}
+ description {{ i.description }}
+ ip address {{ i.ip }}
+ ip ospf area 0
+ ip ospf network point-to-point
+ ip ospf cost {{ cost[i.link] }}
+ ip ospf bfd
+ ip ospf bfd profile {{ bfd.profile }}
+!
+{% endfor %}
+{% for i in r.ifaces if i.kind == 'customer' %}
+interface {{ i.name }}
+ description {{ i.description }}
+ ip address {{ i.ip }}
+!
+{% endfor %}
+{% for i in r.ifaces if i.kind == 'upstream' %}
+interface {{ i.name }}
+ description {{ i.description }}
+ ip address {{ i.ip }}
+!
+{% endfor %}
+router ospf
+ ospf router-id 10.0.0.{{ r.id }}
+ passive-interface lo
+!
+bfd
+ profile {{ bfd.profile }}
+  detect-multiplier {{ bfd.detect_multiplier }}
+  receive-interval {{ bfd.interval_ms }}
+  transmit-interval {{ bfd.interval_ms }}
+ !
+!
+router bgp {{ asn }}
+ bgp router-id 10.0.0.{{ r.id }}
+ no bgp ebgp-requires-policy
+ no bgp default ipv4-unicast
+{% for p in peers %}
+ neighbor 10.0.0.{{ p.id }} remote-as {{ asn }}
+ neighbor 10.0.0.{{ p.id }} update-source lo
+ neighbor 10.0.0.{{ p.id }} description iBGP {{ p.name }}
+{% endfor %}
+{% if r.upstream %}
+ neighbor {{ r.upstream.peer_ip }} remote-as {{ r.upstream.asn }}
+ neighbor {{ r.upstream.peer_ip }} description eBGP upstream {{ r.upstream.name }}
+{% endif %}
+ address-family ipv4 unicast
+{% for n in r.customer_nets %}
+  network {{ n }}
+{% endfor %}
+{% for p in peers %}
+  neighbor 10.0.0.{{ p.id }} activate
+{% endfor %}
+{% if r.upstream %}
+  neighbor {{ r.upstream.peer_ip }} activate
+{% for p in peers %}
+  neighbor 10.0.0.{{ p.id }} next-hop-self
+{% endfor %}
+{% endif %}
+ exit-address-family
+!

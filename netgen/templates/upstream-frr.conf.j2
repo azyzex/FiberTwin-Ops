@@ -1,0 +1,22 @@
+frr defaults traditional
+hostname {{ u.name }}
+service integrated-vtysh-config
+!
+interface {{ u.attach_if }}
+ description eBGP to {{ u.core_router }} (AS {{ u.core_asn }})
+ ip address {{ u.attach_ip }}
+!
+interface {{ u.server_if }}
+ description "Internet" server LAN
+ ip address {{ u.server_gw }}
+!
+router bgp {{ u.asn }}
+ bgp router-id {{ u.router_id }}
+ no bgp ebgp-requires-policy
+ neighbor {{ u.core_peer_ip }} remote-as {{ u.core_asn }}
+ neighbor {{ u.core_peer_ip }} description eBGP FiberTwin core
+ address-family ipv4 unicast
+  network {{ u.server_net }}
+  neighbor {{ u.core_peer_ip }} activate
+ exit-address-family
+!

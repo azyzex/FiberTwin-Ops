@@ -1,0 +1,53 @@
+name: netdevops
+
+# Every change to the intended network is tested before it can reach main:
+#   1. lint + validate the source of truth, render configs, unit tests (incl. capacity/SRLG what-if)
+#   2. deploy a TEMPORARY twin of the whole network on the runner and test the live routers
+on:
+  pull_request:
+    paths: ["sot/**", "netgen/**", "twin/**", "tests/**", "tests_live/**", "labs/core-1a/**", "requirements.txt", ".github/workflows/netdevops.yml"]
+  push:
+    branches: [main]
+    paths: ["sot/**", "netgen/**", "twin/**", "tests/**", "tests_live/**", "labs/core-1a/**", "requirements.txt", ".github/workflows/netdevops.yml"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: Lint the source of truth
+        run: yamllint sot/
+      - name: Render configs (Nornir + Jinja2)
+        run: python -m netgen.render
+      - name: Unit tests (SoT rules, golden configs, capacity + SRLG what-if)
+        run: pytest -q tests
+      - name: Diff of generated configs vs main (what this change does to the routers)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch -q origin main
+          git worktree add -q /tmp/base origin/main
+          (cd /tmp/base && python -m netgen.render >/dev/null 2>&1 || true)
+          { echo '### Router config diff'; echo '```diff'; diff -ru /tmp/base/build/ft-core/configs build/ft-core/configs || true; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+  twin:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: Install containerlab
+        run: bash -c "$(curl -sL https://get.containerlab.dev)"
+      - name: Render + deploy a temporary twin
+        run: |
+          python -m netgen.render
+          sudo bash twin/deploy.sh
+      - name: Live tests (adjacencies, BFD, BGP, reachability, forwarding = what-if model)
+        run: pytest -q tests_live
+      - name: Destroy the twin
+        if: always()
+        run: sudo bash twin/destroy.sh || true
