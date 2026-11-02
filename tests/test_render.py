@@ -1,4 +1,8 @@
-"""The generator must reproduce exactly the configs that were proven on the lab in Slice 1a."""
+"""The generator must reproduce exactly the configs that were proven on the lab in Slice 1a.
+
+It renders a FROZEN copy of the 1a source of truth (tests/fixtures/sot-1a.yaml), so the real
+sot/network.yaml can change while the generator itself stays proven against lab-tested output.
+"""
 import json
 import sys
 from pathlib import Path
@@ -9,11 +13,12 @@ from netgen import model, render
 
 ROOT = model.ROOT
 GOLDEN = ROOT / "labs" / "core-1a" / "configs"
+SOT_1A = Path(__file__).parent / "fixtures" / "sot-1a.yaml"
 
 
 @pytest.fixture(scope="module")
 def out(tmp_path_factory):
-    return render.render(out=tmp_path_factory.mktemp("build"))
+    return render.render(sot_path=SOT_1A, out=tmp_path_factory.mktemp("build"))
 
 
 @pytest.mark.parametrize("node", ["r1", "r2", "r3", "r4", "up1"])
@@ -39,5 +44,5 @@ def test_topology_json_matches_data_contract(out):
 
 def test_clab_topology_lists_every_link(out):
     text = (out / "ft-core.clab.yml").read_text()
-    for lid in model.load()["links"]:
+    for lid in model.load(SOT_1A)["links"]:
         assert f"# {lid}," in text

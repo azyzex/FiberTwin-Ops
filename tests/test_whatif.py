@@ -51,3 +51,14 @@ def test_ecmp_splits_equal_cost_paths(sot):
 def test_unreachable_demand_detected(sot):
     p = whatif.place_demands(sot, failed={"L12", "L13", "L41"})   # r1 cut off from the core
     assert set(p.unreachable) == {"srv->h1", "srv->h3"}
+
+
+def test_intended_state_fits_capacity():
+    """Gate for every PR: with the costs in sot/network.yaml, every demand is reachable
+    and no link goes above the utilisation limit."""
+    sot = model.load()
+    p = whatif.place_demands(sot)
+    assert not p.unreachable, p.unreachable
+    limit = sot["meta"]["max_utilisation_pct"]
+    hot = {k: round(u) for k, u in p.util_pct(sot["meta"]["capacity_mbps"]).items() if u > limit}
+    assert not hot, f"links above {limit}%: {hot}"

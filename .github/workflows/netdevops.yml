@@ -4,8 +4,7 @@ name: netdevops
 #   1. lint + validate the source of truth, render configs, unit tests (incl. capacity/SRLG what-if)
 #   2. deploy a TEMPORARY twin of the whole network on the runner and test the live routers
 on:
-  pull_request:
-    paths: ["sot/**", "netgen/**", "twin/**", "tests/**", "tests_live/**", "labs/core-1a/**", "requirements.txt", ".github/workflows/netdevops.yml"]
+  pull_request:   # every PR, no path filter: these checks are required to merge into main
   push:
     branches: [main]
     paths: ["sot/**", "netgen/**", "twin/**", "tests/**", "tests_live/**", "labs/core-1a/**", "requirements.txt", ".github/workflows/netdevops.yml"]
