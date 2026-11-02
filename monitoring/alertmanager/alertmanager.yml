@@ -4,11 +4,23 @@ route:
   group_wait: 5s
   group_interval: 1m
   repeat_interval: 4h
+  routes:
+    # optical + link-down alerts also trigger the n8n response playbook (and still go to Slack)
+    - receiver: n8n
+      matchers: [alertname =~ "FtOsnrMarginTrend|FtOsnrMarginLow|FtLinkDown"]
+      group_by: [alertname]
+      group_wait: 2s
+      continue: true
+    - receiver: slack
 # a link alert explains the path symptoms it causes: send the cause, not every symptom
 inhibit_rules:
   - source_matchers: [alertname =~ "FtLinkPacketLoss|FtLinkDown"]
     target_matchers: [alertname =~ "FtPathLoss|FtLatencyRising"]
 receivers:
+  - name: n8n
+    webhook_configs:
+      - url: http://n8n:5678/webhook/fibertwin-alerts
+        send_resolved: false
   - name: slack
     slack_configs:
       - api_url_file: /etc/alertmanager/secrets/slack-webhook

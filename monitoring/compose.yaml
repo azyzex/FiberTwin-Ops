@@ -21,6 +21,34 @@ services:
     ports: ["127.0.0.1:8081:8081"]
     restart: unless-stopped
     mem_limit: 128m
+  analysis:
+    # decides (SRLG correlation, what-if, verification) and acts through GitHub/Slack; tested with pytest
+    build: { context: .., dockerfile: analysis/Dockerfile }
+    image: fibertwin/analysis:0.1
+    volumes:
+      - ${FT_ROOT}/sot:/ft/sot:ro                       # the deployer's clone of main = the intended state
+      - /opt/fibertwin/state:/ft/state:ro              # deployer's deployed_sha
+      - /opt/fibertwin/secrets/github-token:/run/secrets/github-token:ro
+      - /opt/fibertwin/secrets/slack-webhook:/run/secrets/slack-webhook:ro
+      - analysis-data:/data
+    ports: ["127.0.0.1:8000:8000"]
+    restart: unless-stopped
+    mem_limit: 192m
+  n8n:
+    # orchestrates the response playbook: order of steps, waits, escalation timer
+    image: n8nio/n8n:2.45.7
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      GENERIC_TIMEZONE: Africa/Tunis
+      N8N_RUNNERS_ENABLED: "true"
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ../n8n/workflows:/workflows:ro
+    ports: ["127.0.0.1:5678:5678"]
+    restart: unless-stopped
+    mem_limit: 512m
   prometheus:
     image: prom/prometheus:v3.5.0
     command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d", "--web.enable-lifecycle"]
@@ -54,5 +82,7 @@ services:
     restart: unless-stopped
     mem_limit: 256m
 volumes:
+  analysis-data:
+  n8n-data:
   prom-data:
   grafana-data:

@@ -1,0 +1,583 @@
+{
+ "id": "ftGoldenPath0001",
+ "name": "FiberTwin golden path",
+ "nodes": [
+  {
+   "id": "2b60adf1-82ac-5bc3-9baa-b869be168eb3",
+   "name": "Alertmanager webhook",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    300
+   ],
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "fibertwin-alerts",
+    "responseMode": "onReceived",
+    "options": {}
+   },
+   "webhookId": "27803cd3-998c-5929-aea2-09784a27f430"
+  },
+  {
+   "id": "576e3425-7535-5fd8-989c-ba85369b81c5",
+   "name": "Analyse alerts",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    300
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/alerts",
+    "options": {
+     "timeout": 30000
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify($json.body) }}"
+   }
+  },
+  {
+   "id": "311df63e-2c2a-5474-9d79-ed2ff976dd91",
+   "name": "Drain?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    300
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "e74cafc2-79d0-517e-aaec-d473887dce06",
+       "leftValue": "={{ $json.action }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       },
+       "rightValue": "drain"
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "2eb254b5-a32c-5a9b-a737-450d02612527",
+   "name": "Ticket?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    660,
+    460
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "42fa06fe-7ede-5953-a8d5-bbd9f4e499cc",
+       "leftValue": "={{ $json.action }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       },
+       "rightValue": "ticket"
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "9f723267-79d5-5c47-a49b-a5e285d3de05",
+   "name": "Open work order",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    460
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/ticket",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  },
+  {
+   "id": "079b3b64-0db2-549a-8153-38a22d4086c8",
+   "name": "What-if",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    200
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/whatif",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  },
+  {
+   "id": "af2dbc74-af02-567e-8be3-2b93135a15a7",
+   "name": "Safe?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    200
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "a2f5488f-c2fd-5e04-b5d1-e975c49cbe74",
+       "leftValue": "={{ $json.ok }}",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "065df9a4-05aa-564a-8d7f-6289b95b47c6",
+   "name": "Not safe: escalate",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    320
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/notify",
+    "options": {
+     "timeout": 30000
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({text: ':no_entry: ' + $('Analyse alerts').first().json.incident + ': drain of ' + $('Analyse alerts').first().json.fibre + ' is NOT safe (' + $json.reasons.join('; ') + '). Human decision needed.'}) }}"
+   }
+  },
+  {
+   "id": "ec7b99b2-1b93-50ac-9bc1-50e3c8445984",
+   "name": "Open drain PR",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    100
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/drain-pr",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  },
+  {
+   "id": "ad11faf8-8565-50c9-9e94-059a6bc7f533",
+   "name": "Wait 20 s",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    1320,
+    100
+   ],
+   "parameters": {
+    "resume": "timeInterval",
+    "amount": 20,
+    "unit": "seconds"
+   },
+   "webhookId": "7d9472e8-5e70-51d0-99da-c44e9c6f7e70"
+  },
+  {
+   "id": "51d139b4-ed96-542c-886a-72e4ba7673b2",
+   "name": "Status",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1540,
+    100
+   ],
+   "parameters": {
+    "method": "GET",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/status",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  },
+  {
+   "id": "a1727fd0-df51-56ca-b007-cc1886706d2f",
+   "name": "Deployed?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1760,
+    100
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "1276503c-30c7-57b6-865e-5bf529921f8d",
+       "leftValue": "={{ $json.stage }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       },
+       "rightValue": "deployed"
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "aa867c2e-233a-5d1a-8669-9ce86acdf367",
+   "name": "Settle 30 s",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    1980,
+    0
+   ],
+   "parameters": {
+    "resume": "timeInterval",
+    "amount": 30,
+    "unit": "seconds"
+   },
+   "webhookId": "76491706-6b71-515b-8833-9198c3b80d0b"
+  },
+  {
+   "id": "cb966441-e7ce-5ffa-ba71-e0836a2bb022",
+   "name": "Verify recovery",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2200,
+    0
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/verify",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  },
+  {
+   "id": "0c50e817-79d8-5b66-8b0b-aadbff37a3f2",
+   "name": "Rejected?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1980,
+    220
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "aa92c369-ba7e-5b12-893e-0b449d8cb5f5",
+       "leftValue": "={{ $json.stage }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       },
+       "rightValue": "rejected"
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "a6846425-4d34-5339-b1e2-6133fd7d6184",
+   "name": "Every 15 min?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    2200,
+    320
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "a4c4495d-a33e-53cb-8d9c-460e7c59680b",
+       "leftValue": "={{ $runIndex % 45 }}",
+       "operator": {
+        "type": "number",
+        "operation": "equals"
+       },
+       "rightValue": 44
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "325e87a8-3602-5ed2-83fe-209d4e6ffb2a",
+   "name": "Remind approver",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2420,
+    420
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/notify",
+    "options": {
+     "timeout": 30000
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({text: ':hourglass: ' + $('Analyse alerts').first().json.incident + ' still waits for approval: ' + 'the fibre keeps degrading. Review the drain PR.'}) }}"
+   }
+  }
+ ],
+ "connections": {
+  "Alertmanager webhook": {
+   "main": [
+    [
+     {
+      "node": "Analyse alerts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Analyse alerts": {
+   "main": [
+    [
+     {
+      "node": "Drain?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Drain?": {
+   "main": [
+    [
+     {
+      "node": "What-if",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Ticket?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ticket?": {
+   "main": [
+    [
+     {
+      "node": "Open work order",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "What-if": {
+   "main": [
+    [
+     {
+      "node": "Safe?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Safe?": {
+   "main": [
+    [
+     {
+      "node": "Open drain PR",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Not safe: escalate",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Open drain PR": {
+   "main": [
+    [
+     {
+      "node": "Wait 20 s",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Wait 20 s": {
+   "main": [
+    [
+     {
+      "node": "Status",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Status": {
+   "main": [
+    [
+     {
+      "node": "Deployed?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Deployed?": {
+   "main": [
+    [
+     {
+      "node": "Settle 30 s",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Rejected?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Settle 30 s": {
+   "main": [
+    [
+     {
+      "node": "Verify recovery",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Rejected?": {
+   "main": [
+    [],
+    [
+     {
+      "node": "Every 15 min?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Every 15 min?": {
+   "main": [
+    [
+     {
+      "node": "Remind approver",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Wait 20 s",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Remind approver": {
+   "main": [
+    [
+     {
+      "node": "Wait 20 s",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "active": false,
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "pinData": {},
+ "tags": []
+}

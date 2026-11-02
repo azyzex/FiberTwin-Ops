@@ -9,6 +9,8 @@ scrape_configs:
     static_configs: [{ targets: ["exporter:9105"] }]
   - job_name: optical
     static_configs: [{ targets: ["optical:9106"] }]
+  - job_name: analysis
+    static_configs: [{ targets: ["analysis:8000"] }]
   - job_name: alertmanager
     static_configs: [{ targets: ["alertmanager:9093"] }]
   - job_name: prometheus
