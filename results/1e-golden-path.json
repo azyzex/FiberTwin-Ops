@@ -1,0 +1,25 @@
+{
+ "date": "2026-11-02T23:33:36.658912+00:00",
+ "scenario": "F1 gray failure, F12 span 0",
+ "runs": {
+  "without": {
+   "ramp_db_per_min": 4.0,
+   "to_db": 32.0,
+   "detected_s": 130.3,
+   "model_loss_starts_s": 420.1,
+   "streams": {
+    "srv->h1 (L12)": {
+     "packets": 570005,
+     "lost": 780,
+     "loss_pct": 0.137
+    },
+    "srv->h3 (L13)": {
+     "packets": 570005,
+     "lost": 787,
+     "loss_pct": 0.138
+    }
+   },
+   "lost_total": 1567
+  }
+ }
+}

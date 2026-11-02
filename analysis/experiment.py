@@ -168,7 +168,9 @@ def main() -> None:
     ap.add_argument("--hold", type=int, default=90)
     ap.add_argument("--runs", default="without,with")
     a = ap.parse_args()
-    out = {"date": datetime.now(timezone.utc).isoformat(), "scenario": "F1 gray failure, F12 span 0", "runs": {}}
+    res_file = ROOT / "results" / "1e-golden-path.json"
+    out = json.loads(res_file.read_text()) if res_file.exists() else {"scenario": "F1 gray failure, F12 span 0", "runs": {}}
+    out["date"] = datetime.now(timezone.utc).isoformat()   # re-running one run keeps the other
     for name in a.runs.split(","):
         out["runs"][name] = run(name, name == "with", a.rate, a.to_db, a.hold)
         (ROOT / "results").mkdir(exist_ok=True)

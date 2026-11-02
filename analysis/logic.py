@@ -78,8 +78,10 @@ def correlate(sot: dict, alerts: list[dict], telemetry: dict[str, dict]) -> Corr
         best = [c for c in candidates if c[0] == candidates[0][0]]
         if len(best) == 1:
             _, f, riders = best[0]
+            lows = ", ".join(f"{r} {telemetry.get(r, {}).get('design_margin', 0) - telemetry.get(r, {}).get('margin', 0):.1f} dB"
+                             for r in riders)
             return Correlation("F1", f, riders, [
-                f"{', '.join(optical)} degrade together; the only fibre they all share is {f} (SRLG)",
+                f"every link on fibre {f} is degrading (OSNR margin lost: {lows}); {f} is the only fibre they share (SRLG)",
                 f"received power normal on {', '.join(riders)}: loss is inside a span, not at a receiver"])
         return Correlation(None, None, optical, [f"ambiguous: fibres {', '.join(c[1] for c in best)} fit equally"])
     return Correlation(None, None, optical, ["degrading links don't match any single fibre: ticket for investigation"])
@@ -131,14 +133,18 @@ def verify(drained_links: list[str], util: dict[str, float], probe_loss: dict[st
 
 
 def drain_sot_text(sot_text: str, links: list[str], cost: int, note: str) -> str:
-    """Edit sot/network.yaml TEXT (keeps comments and layout): set ospf_cost on the given links."""
+    """Edit sot/network.yaml TEXT (keeps comments and layout): set ospf_cost on the given links.
+    The note goes on its own comment line above the link (a trailing comment broke yamllint's line
+    length in the first live run); an empty note removes an earlier "drained:" note (restore)."""
     import re
-    out = []
+    out: list[str] = []
     for line in sot_text.splitlines(keepends=True):
         m = re.match(r"^(\s*)(L\w+):\s*\{", line)
         if m and m.group(2) in links:
+            if out and out[-1].lstrip().startswith("# drained:"):
+                out.pop()
+            if note:
+                out.append(f"{m.group(1)}# {note}\n")
             line = re.sub(r"ospf_cost:\s*\d+", f"ospf_cost: {cost}", line)
-            if "#" not in line:
-                line = line.rstrip("\n") + f"   # {note}\n"
         out.append(line)
     return "".join(out)

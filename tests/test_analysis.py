@@ -88,4 +88,19 @@ def test_drain_edit_keeps_the_file_and_changes_only_the_costs():
     assert new_y["links"]["L12"]["ospf_cost"] == 1000 and new_y["links"]["L13"]["ospf_cost"] == 1000
     for l in ("L23", "L34", "L41"):
         assert new_y["links"][l] == old_y["links"][l]
-    assert sum(a != b for a, b in zip(text.splitlines(), new.splitlines())) == 2
+    assert len(new.splitlines()) == len(text.splitlines()) + 2          # one note line per link
+    assert max(map(len, new.splitlines())) <= max(map(len, text.splitlines()))  # lines don't grow
+    restored = logic.drain_sot_text(new, ["L12", "L13"], 10, "")
+    assert restored == text                                               # restore = exact original
+
+
+def test_drained_sot_passes_yamllint(tmp_path):
+    """The first live drain PR was rejected by CI (yamllint line length). Never again."""
+    from yamllint import linter
+    from yamllint.config import YamlLintConfig
+    root = Path(__file__).resolve().parents[1]
+    new = logic.drain_sot_text((root / "sot" / "network.yaml").read_text(), ["L12", "L13"], 1000,
+                               "drained: F12 degrading (INC-20261102-234715-F12)")
+    conf = YamlLintConfig(file=str(root / ".yamllint.yml"))
+    problems = [p for p in linter.run(new, conf) if p.level == "error"]
+    assert not problems, problems

@@ -154,7 +154,9 @@ def _alerts() -> dict:
     key = c.fibre or ",".join(c.links)
     with closing(db()) as con:
         open_drains = {r["fibre"] for r in con.execute("SELECT fibre FROM incidents WHERE state IN ('draining','drained')")}
-        recent = {r["fibre"]: r["created"] for r in con.execute("SELECT fibre, created FROM incidents WHERE fibre IS NOT NULL")}
+        # cooldown counts only drains that were really applied (merged), not proposals that were rejected
+        recent = {r["fibre"]: r["created"] for r in con.execute(
+            "SELECT fibre, created FROM incidents WHERE fibre IS NOT NULL AND merge_sha IS NOT NULL")}
         inc = con.execute("SELECT * FROM incidents WHERE (fibre=? OR links=?) AND state NOT IN ('closed','reverted')",
                           (c.fibre, json.dumps(c.links))).fetchone()
     if inc:   # already handling it: just report where we are
