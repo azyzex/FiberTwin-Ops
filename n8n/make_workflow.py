@@ -8,7 +8,7 @@ every decision and every external action is a call to the analysis API (tested w
                                                └► ticket? ─► Open work order      ▼
                      ┌──────────────────────────── Wait 20 s ◄──────────────┐  Status (API)
                      │                                                       │     │
-                     └──► Status ─► deployed? ─► Settle 30 s ─► Verify (API)  │     │
+                     └──► Status ─► deployed? ─► Settle 60 s ─► Verify (API)  │     │
                                     rejected? ─► stop                        │     │
                                     every 15 min ─► remind approver (Slack) ─┘ ◄───┘
 """
@@ -71,7 +71,7 @@ http("Open drain PR", "POST", f"/incidents/{INC}/drain-pr", 1100, 100)
 wait("Wait 20 s", 20, 1320, 100)
 http("Status", "GET", f"/incidents/{INC}/status", 1540, 100)
 cond("Deployed?", "={{ $json.stage }}", STR_EQ, "deployed", 1760, 100)
-wait("Settle 30 s", 30, 1980, 0)
+wait("Settle 60 s", 60, 1980, 0)
 http("Verify recovery", "POST", f"/incidents/{INC}/verify", 2200, 0)
 cond("Rejected?", "={{ $json.stage }}", STR_EQ, "rejected", 1980, 220)
 cond("Every 15 min?", "={{ $runIndex % 45 }}", {"type": "number", "operation": "equals"}, 44, 2200, 320)
@@ -88,8 +88,8 @@ link("Safe?", "Open drain PR", 0); link("Safe?", "Not safe: escalate", 1)
 link("Open drain PR", "Wait 20 s")
 link("Wait 20 s", "Status")
 link("Status", "Deployed?")
-link("Deployed?", "Settle 30 s", 0); link("Deployed?", "Rejected?", 1)
-link("Settle 30 s", "Verify recovery")
+link("Deployed?", "Settle 60 s", 0); link("Deployed?", "Rejected?", 1)
+link("Settle 60 s", "Verify recovery")
 link("Rejected?", "Every 15 min?", 1)
 link("Every 15 min?", "Remind approver", 0); link("Every 15 min?", "Wait 20 s", 1)
 link("Remind approver", "Wait 20 s")

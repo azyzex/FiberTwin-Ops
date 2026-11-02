@@ -272,8 +272,8 @@
    }
   },
   {
-   "id": "aa867c2e-233a-5d1a-8669-9ce86acdf367",
-   "name": "Settle 30 s",
+   "id": "a254d7ce-03c1-5166-bec3-f18c1c2c0a13",
+   "name": "Settle 60 s",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
    "position": [
@@ -282,10 +282,10 @@
    ],
    "parameters": {
     "resume": "timeInterval",
-    "amount": 30,
+    "amount": 60,
     "unit": "seconds"
    },
-   "webhookId": "76491706-6b71-515b-8833-9198c3b80d0b"
+   "webhookId": "4274f3ca-ea94-5ca9-a4bb-8f684caee19f"
   },
   {
    "id": "cb966441-e7ce-5ffa-ba71-e0836a2bb022",
@@ -507,7 +507,7 @@
    "main": [
     [
      {
-      "node": "Settle 30 s",
+      "node": "Settle 60 s",
       "type": "main",
       "index": 0
      }
@@ -521,7 +521,7 @@
     ]
    ]
   },
-  "Settle 30 s": {
+  "Settle 60 s": {
    "main": [
     [
      {
