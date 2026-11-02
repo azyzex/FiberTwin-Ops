@@ -1,14 +1,22 @@
-"""Capacity + SRLG what-if. The baseline must match what was measured on the lab in 1a."""
+"""Capacity + SRLG what-if.
+
+Model tests use the FROZEN 1a source of truth (tests/fixtures/sot-1a.yaml), whose numbers were
+measured on the lab. Only test_intended_state_fits_capacity reads the live sot/network.yaml.
+"""
 import copy
+from pathlib import Path
 
 import pytest
 
 from netgen import model, whatif
 
 
+SOT_1A = Path(__file__).parent / "fixtures" / "sot-1a.yaml"
+
+
 @pytest.fixture
 def sot():
-    return model.load()
+    return model.load(SOT_1A)
 
 
 def test_srlg_map(sot):

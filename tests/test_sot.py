@@ -1,5 +1,6 @@
 """The source of truth must be self-consistent before anything is generated."""
 import copy
+from pathlib import Path
 
 import pytest
 
@@ -8,11 +9,11 @@ from netgen import model
 
 @pytest.fixture
 def sot():
-    return model.load()
+    return model.load(Path(__file__).parent / "fixtures" / "sot-1a.yaml")
 
 
-def test_current_sot_is_valid(sot):
-    model.validate(sot)
+def test_current_sot_is_valid():
+    model.validate(model.load())
 
 
 def test_unknown_fibre_rejected(sot):
