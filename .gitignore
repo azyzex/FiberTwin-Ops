@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# Node / portal
+node_modules/
+portal/dist/
+# containerlab runtime folders
+clab-*/
+.*.clab.yml.bak
+# secrets never go to Git
+.env
+*.secret*
+portal/test-results/
+portal/playwright-report/

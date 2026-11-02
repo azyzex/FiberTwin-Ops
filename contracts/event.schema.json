@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fibertwin/event.schema.json",
+  "title": "FiberTwin incident event (data contract v0)",
+  "description": "One step of an incident's life. The timeline screen and the Grafana annotations are built from these.",
+  "type": "object",
+  "required": ["ts", "incident_id", "type", "fault_class", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": { "type": "string", "format": "date-time" },
+    "incident_id": { "type": "string" },
+    "type": {
+      "enum": [
+        "detected", "located", "what_if_passed", "what_if_failed", "pr_opened",
+        "ci_passed", "ci_failed", "approved", "deployed", "verified",
+        "revert_opened", "work_order", "ticket", "closed"
+      ]
+    },
+    "fault_class": { "enum": ["F1", "F1b", "F2", "F3", "F4", "F5", "F6"] },
+    "element": { "type": "string", "description": "Fibre, link, ONT or node id involved." },
+    "summary": { "type": "string" },
+    "url": { "type": "string", "format": "uri", "description": "PR, CI run or work-order link." }
+  }
+}

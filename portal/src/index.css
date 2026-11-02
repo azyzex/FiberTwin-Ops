@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ok: #22c55e;
+  --color-warn: #f59e0b;
+  --color-crit: #ef4444;
+  --color-drained: #64748b;
+  --color-fibre: #38bdf8;
+}
+
+html, body, #root { height: 100%; }
+body { background: #0b1220; color: #e2e8f0; }

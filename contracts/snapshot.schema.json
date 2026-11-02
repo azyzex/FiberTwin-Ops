@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fibertwin/snapshot.schema.json",
+  "title": "FiberTwin metrics snapshot (data contract v0)",
+  "description": "The state of the twin at one instant: what the map colours from. Live mode streams these over a WebSocket; replay mode reads a list of them.",
+  "type": "object",
+  "required": ["ts", "links"],
+  "additionalProperties": false,
+  "$defs": {
+    "health": { "enum": ["ok", "warn", "crit", "down", "drained"] }
+  },
+  "properties": {
+    "ts": { "type": "string", "format": "date-time" },
+    "links": {
+      "description": "Keyed by ip_link id.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["health"],
+        "additionalProperties": false,
+        "properties": {
+          "health": { "$ref": "#/$defs/health" },
+          "util_pct": { "type": "number", "minimum": 0 },
+          "loss_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+          "latency_ms": { "type": "number", "minimum": 0 },
+          "osnr_margin_db": { "type": "number", "description": "Modelled. Below 0 = past the FEC cliff." },
+          "ospf_cost": { "type": "integer" }
+        }
+      }
+    },
+    "fibres": {
+      "description": "Keyed by fibre id. Modelled optical state.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["health"],
+        "additionalProperties": false,
+        "properties": {
+          "health": { "$ref": "#/$defs/health" },
+          "extra_loss_db": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "onts": {
+      "description": "Keyed by ONT node id. Modelled per-direction budget.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["health"],
+        "additionalProperties": false,
+        "properties": {
+          "health": { "$ref": "#/$defs/health" },
+          "rx_down_dbm": { "type": "number" },
+          "rx_up_dbm": { "type": "number" },
+          "margin_db": { "type": "number" }
+        }
+      }
+    },
+    "paths": {
+      "description": "Optional: current forwarding paths for the demo flows, as node id lists (from the SPF what-if).",
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fibertwin/replay.schema.json",
+  "title": "FiberTwin replay bundle (data contract v0)",
+  "description": "A recorded incident: topology + snapshots over time + events. This is what GitHub Pages serves for the public replay.",
+  "type": "object",
+  "required": ["meta", "topology", "frames", "events"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["scenario", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "type": "string" },
+        "source": {
+          "enum": ["recorded", "synthetic"],
+          "description": "'recorded' = exported from a real run of the twin. 'synthetic' = hand-made fixture for development; never shown publicly as a result."
+        },
+        "recorded_at": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    },
+    "topology": { "$ref": "topology.schema.json" },
+    "frames": { "type": "array", "items": { "$ref": "snapshot.schema.json" }, "minItems": 1 },
+    "events": { "type": "array", "items": { "$ref": "event.schema.json" } }
+  }
+}

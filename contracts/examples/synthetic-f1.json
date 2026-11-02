@@ -1,0 +1,4605 @@
+{
+ "meta": {
+  "scenario": "F1 core fibre gray failure on F12",
+  "source": "synthetic",
+  "notes": "Hand-made fixture for portal development. Not a measurement."
+ },
+ "topology": {
+  "contract_version": "0.1",
+  "nodes": [
+   {
+    "id": "r1",
+    "role": "core",
+    "label": "R1",
+    "site": "Tunis",
+    "loopback": "10.0.0.1",
+    "pos": {
+     "x": 200,
+     "y": 150
+    }
+   },
+   {
+    "id": "r2",
+    "role": "core",
+    "label": "R2",
+    "site": "Sousse",
+    "loopback": "10.0.0.2",
+    "pos": {
+     "x": 600,
+     "y": 150
+    }
+   },
+   {
+    "id": "r3",
+    "role": "core",
+    "label": "R3",
+    "site": "Mahdia",
+    "loopback": "10.0.0.3",
+    "pos": {
+     "x": 600,
+     "y": 500
+    }
+   },
+   {
+    "id": "r4",
+    "role": "core",
+    "label": "R4",
+    "site": "Sfax",
+    "loopback": "10.0.0.4",
+    "pos": {
+     "x": 200,
+     "y": 500
+    }
+   },
+   {
+    "id": "olt1",
+    "role": "olt",
+    "label": "OLT",
+    "pos": {
+     "x": 800,
+     "y": 500
+    }
+   },
+   {
+    "id": "spl1",
+    "role": "splitter",
+    "label": "Splitter 1:32",
+    "pos": {
+     "x": 920,
+     "y": 500
+    }
+   },
+   {
+    "id": "ont1",
+    "role": "ont",
+    "label": "ONT 1",
+    "pos": {
+     "x": 1000,
+     "y": 380
+    }
+   },
+   {
+    "id": "ont2",
+    "role": "ont",
+    "label": "ONT 2",
+    "pos": {
+     "x": 1000,
+     "y": 460
+    }
+   },
+   {
+    "id": "ont3",
+    "role": "ont",
+    "label": "ONT 3",
+    "pos": {
+     "x": 1000,
+     "y": 540
+    }
+   },
+   {
+    "id": "ont4",
+    "role": "ont",
+    "label": "ONT 4",
+    "pos": {
+     "x": 1000,
+     "y": 620
+    }
+   }
+  ],
+  "fibres": [
+   {
+    "id": "F12",
+    "a": "r1",
+    "b": "r2",
+    "length_km": 140,
+    "spans": 2
+   },
+   {
+    "id": "F23",
+    "a": "r2",
+    "b": "r3",
+    "length_km": 60,
+    "spans": 1
+   },
+   {
+    "id": "F34",
+    "a": "r3",
+    "b": "r4",
+    "length_km": 120,
+    "spans": 2
+   },
+   {
+    "id": "F41",
+    "a": "r4",
+    "b": "r1",
+    "length_km": 270,
+    "spans": 4
+   }
+  ],
+  "lightpaths": [
+   {
+    "id": "LP12",
+    "fibres": [
+     "F12"
+    ],
+    "wavelength": 1,
+    "ip_link": "L12"
+   },
+   {
+    "id": "LP23",
+    "fibres": [
+     "F23"
+    ],
+    "wavelength": 1,
+    "ip_link": "L23"
+   },
+   {
+    "id": "LP34",
+    "fibres": [
+     "F34"
+    ],
+    "wavelength": 1,
+    "ip_link": "L34"
+   },
+   {
+    "id": "LP41",
+    "fibres": [
+     "F41"
+    ],
+    "wavelength": 1,
+    "ip_link": "L41"
+   },
+   {
+    "id": "LP13",
+    "fibres": [
+     "F12",
+     "F23"
+    ],
+    "wavelength": 2,
+    "ip_link": "L13"
+   }
+  ],
+  "ip_links": [
+   {
+    "id": "L12",
+    "a": "r1",
+    "a_if": "eth1",
+    "b": "r2",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F12"
+    ]
+   },
+   {
+    "id": "L23",
+    "a": "r2",
+    "a_if": "eth2",
+    "b": "r3",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F23"
+    ]
+   },
+   {
+    "id": "L34",
+    "a": "r3",
+    "a_if": "eth2",
+    "b": "r4",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F34"
+    ]
+   },
+   {
+    "id": "L41",
+    "a": "r4",
+    "a_if": "eth2",
+    "b": "r1",
+    "b_if": "eth2",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F41"
+    ]
+   },
+   {
+    "id": "L13",
+    "a": "r1",
+    "a_if": "eth3",
+    "b": "r3",
+    "b_if": "eth3",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F12",
+     "F23"
+    ]
+   }
+  ],
+  "access_links": [
+   {
+    "id": "A-up",
+    "a": "r3",
+    "b": "olt1",
+    "segment": "uplink"
+   },
+   {
+    "id": "A-feed",
+    "a": "olt1",
+    "b": "spl1",
+    "segment": "feeder",
+    "length_km": 8
+   },
+   {
+    "id": "A-d1",
+    "a": "spl1",
+    "b": "ont1",
+    "segment": "drop",
+    "length_km": 0.5
+   },
+   {
+    "id": "A-d2",
+    "a": "spl1",
+    "b": "ont2",
+    "segment": "drop",
+    "length_km": 0.7
+   },
+   {
+    "id": "A-d3",
+    "a": "spl1",
+    "b": "ont3",
+    "segment": "drop",
+    "length_km": 0.9000000000000001
+   },
+   {
+    "id": "A-d4",
+    "a": "spl1",
+    "b": "ont4",
+    "segment": "drop",
+    "length_km": 1.1
+   }
+  ]
+ },
+ "frames": [
+  {
+   "ts": "2026-11-01T10:00:00Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 6.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:00:15Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 6.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:00:30Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 6.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:00:45Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 6.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:01:00Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 6.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:01:15Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 5.75,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.25,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:01:30Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 5.5,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 5.0,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:01:45Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 5.25,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 4.75,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:02:00Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 5.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 4.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 1.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:02:15Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 4.75,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 4.25,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 1.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:02:30Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 4.5,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 4.0,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 1.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:02:45Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 4.25,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 3.75,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 1.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:03:00Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 4.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 3.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 2.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:03:15Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 3.75,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 3.25,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 2.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:03:30Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 3.5,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 3.0,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 2.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:03:45Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 3.25,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 2.75,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 2.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:04:00Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 3.0,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 2.5,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 3.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:04:15Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 2.75,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 2.25,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 3.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:04:30Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 2.5,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 2.0,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 3.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:04:45Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 30.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 2.25,
+     "ospf_cost": 10
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 15.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 12.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 1.75,
+     "ospf_cost": 10
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 3.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:05:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 2.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 4.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:05:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 1.75,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 1.25,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 4.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:05:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 1.5,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 1.0,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 4.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:05:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 1.25,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 0.75,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 4.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:06:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 0.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 5.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:06:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 0.75,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 0.25,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 5.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:06:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 0.5,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": 0.0,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 5.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:06:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 0.25,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -0.25,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 5.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:07:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": 0.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -0.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 6.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:07:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -0.25,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -0.75,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 6.25
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:07:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -0.5,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 6.5
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:07:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -0.75,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.25,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 6.75
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:08:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:08:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:08:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:08:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:09:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:09:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:09:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:09:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:10:00Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:10:15Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:10:30Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-01T10:10:45Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "osnr_margin_db": -1.0,
+     "ospf_cost": 1000
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 20.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 55.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.9,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 67.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.65,
+     "osnr_margin_db": 6.5,
+     "ospf_cost": 10
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.3,
+     "osnr_margin_db": -1.5,
+     "ospf_cost": 1000
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 7.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "onts": {
+    "ont1": {
+     "health": "ok",
+     "rx_down_dbm": -21.9,
+     "rx_up_dbm": -23.3,
+     "margin_db": 5.1
+    },
+    "ont2": {
+     "health": "ok",
+     "rx_down_dbm": -22.3,
+     "rx_up_dbm": -23.6,
+     "margin_db": 4.7
+    },
+    "ont3": {
+     "health": "ok",
+     "rx_down_dbm": -22.7,
+     "rx_up_dbm": -23.9,
+     "margin_db": 4.3
+    },
+    "ont4": {
+     "health": "ok",
+     "rx_down_dbm": -23.1,
+     "rx_up_dbm": -24.2,
+     "margin_db": 3.9
+    }
+   },
+   "paths": {
+    "r1->olt1": [
+     "r1",
+     "r4",
+     "r3",
+     "olt1"
+    ]
+   }
+  }
+ ],
+ "events": [
+  {
+   "ts": "2026-11-01T10:03:30Z",
+   "incident_id": "INC-F1-0001",
+   "type": "detected",
+   "fault_class": "F1",
+   "element": "L12,L13",
+   "summary": "OSNR margin trend on L12 and L13 crosses the warning line; no packet loss yet"
+  },
+  {
+   "ts": "2026-11-01T10:03:45Z",
+   "incident_id": "INC-F1-0001",
+   "type": "located",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "Both links share fibre F12 (SRLG): one physical cause"
+  },
+  {
+   "ts": "2026-11-01T10:03:45Z",
+   "incident_id": "INC-F1-0001",
+   "type": "what_if_passed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "Draining L12 + L13: max utilisation 67% (< 80%), new paths avoid F12"
+  },
+  {
+   "ts": "2026-11-01T10:04:00Z",
+   "incident_id": "INC-F1-0001",
+   "type": "pr_opened",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "PR: OSPF cost 10 -> 1000 on L12 and L13"
+  },
+  {
+   "ts": "2026-11-01T10:04:30Z",
+   "incident_id": "INC-F1-0001",
+   "type": "ci_passed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "CI: temporary twin, adjacencies, reachability, capacity, SRLG diversity all green"
+  },
+  {
+   "ts": "2026-11-01T10:04:45Z",
+   "incident_id": "INC-F1-0001",
+   "type": "approved",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "Human approval in PR review"
+  },
+  {
+   "ts": "2026-11-01T10:05:00Z",
+   "incident_id": "INC-F1-0001",
+   "type": "deployed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "Pull-based deployer applied main; traffic moved to r1-r4-r3"
+  },
+  {
+   "ts": "2026-11-01T10:06:00Z",
+   "incident_id": "INC-F1-0001",
+   "type": "verified",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "No loss on the new path, no new alarms: drain verified; repair ticket open"
+  }
+ ]
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fibertwin/topology.schema.json",
+  "title": "FiberTwin topology (data contract v0)",
+  "description": "The three layers of the twin, generated from the source of truth. Fibres carry lightpaths; each lightpath carries one IP link; IP links sharing a fibre form an SRLG.",
+  "type": "object",
+  "required": ["contract_version", "nodes", "fibres", "lightpaths", "ip_links"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "0.1" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "role", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "role": { "enum": ["core", "edge", "upstream", "olt", "splitter", "ont"] },
+          "label": { "type": "string" },
+          "site": { "type": "string" },
+          "loopback": { "type": "string", "format": "ipv4" },
+          "pos": {
+            "description": "Optional layout hint for the map (0-1000 grid).",
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
+          }
+        }
+      }
+    },
+    "fibres": {
+      "description": "L0: physical fibres between core sites.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "a", "b", "length_km", "spans"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "a": { "type": "string" },
+          "b": { "type": "string" },
+          "length_km": { "type": "number", "exclusiveMinimum": 0 },
+          "spans": { "type": "integer", "minimum": 1, "description": "Amplified spans on this fibre." }
+        }
+      }
+    },
+    "lightpaths": {
+      "description": "WDM lightpaths placed by the RWA code.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "fibres", "wavelength", "ip_link"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "fibres": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "wavelength": { "type": "integer", "minimum": 1 },
+          "ip_link": { "type": "string" }
+        }
+      }
+    },
+    "ip_links": {
+      "description": "L3: real links between FRR routers.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "a", "a_if", "b", "b_if", "capacity_mbps", "ospf_cost", "srlgs"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "a": { "type": "string" },
+          "a_if": { "type": "string" },
+          "b": { "type": "string" },
+          "b_if": { "type": "string" },
+          "capacity_mbps": { "type": "number", "exclusiveMinimum": 0, "description": "Scaled capacity applied with tc htb (1:1000)." },
+          "ospf_cost": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "srlgs": { "type": "array", "items": { "type": "string" }, "description": "Fibre ids this link rides on." }
+        }
+      }
+    },
+    "access_links": {
+      "description": "Access tree: OLT -> splitter (feeder) -> ONTs (drops).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "a", "b", "segment"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "a": { "type": "string" },
+          "b": { "type": "string" },
+          "segment": { "enum": ["uplink", "feeder", "drop"] },
+          "length_km": { "type": "number", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
