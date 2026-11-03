@@ -74,7 +74,9 @@ BFD_DEFAULTS = {"detect-multiplier 3", "receive-interval 300", "transmit-interva
 
 
 def normalise(d: dict[str, list[str]], intended: str) -> dict[str, list[str]]:
-    delete = [x for x in d["delete"] if x != "ipv6 forwarding"]          # kernel default shown by FRR
+    # kernel / host defaults FRR prints but nobody configured: IPv6 forwarding, the host's domain name
+    # (seen on the laptop only: WSL gives the containers a 'localdomain' search domain)
+    delete = [x for x in d["delete"] if x != "ipv6 forwarding" and not x.removeprefix("no ").startswith("domainname")]
     add = list(d["add"])
     # BFD profile values equal to FRR's defaults are not printed in the running config
     add = [x for x in add if not (x.startswith("bfd > profile ") and x.split(" > ")[-1] in BFD_DEFAULTS)]

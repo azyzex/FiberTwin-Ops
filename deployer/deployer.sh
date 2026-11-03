@@ -48,10 +48,21 @@ if [ "$TARGET" = "$CURRENT" ]; then
     # F5: out-of-band config changes (someone edited a router by hand). Git is the truth: put it back.
     cfg=$("$VENV/bin/python" twin/config_drift.py --json 2>/dev/null || true)
     if [ -n "$cfg" ] && [ "$(echo "$cfg" | jq -r '.drift | length')" != "0" ]; then
+      sig=$(echo "$cfg" | jq -cS '.drift' | sha256sum | cut -c1-16)
+      if [ "$sig" = "$(cat "$STATE/drift_sig" 2>/dev/null)" ]; then
+        exit 0   # same drift already handled: a re-apply didn't remove it, a human was told once. No loop.
+      fi
+      echo "$sig" > "$STATE/drift_sig"
       log "DRIFT out-of-band config change: $(echo "$cfg" | jq -c '.drift')"
       out=$("$VENV/bin/python" twin/config_drift.py --json --reapply 2>/dev/null || true)
-      log "APPLY re-applied Git config on $(echo "$out" | jq -r '.reapplied | join(",")'); still drifted: $(echo "$out" | jq -c '.still_drifted')"
-      curl -s -m 5 -X POST localhost:8000/notify -H 'Content-Type: application/json'         -d "$(jq -n --arg t ":warning: Out-of-band change on $(echo "$cfg" | jq -r '.drift | keys | join(",")') reverted to the Git config. $(echo "$cfg" | jq -c '.drift')" '{text: $t}')" >/dev/null || true
+      still=$(echo "$out" | jq -c '.still_drifted')
+      log "APPLY re-applied Git config on $(echo "$out" | jq -r '.reapplied | join(",")'); still drifted: $still"
+      if [ "$still" = "{}" ]; then
+        rm -f "$STATE/drift_sig"; msg=":warning: Out-of-band change on $(echo "$cfg" | jq -r '.drift | keys | join(",")') reverted to the Git config."
+      else
+        msg=":rotating_light: Out-of-band change that re-applying Git did NOT remove: $still. Not retrying; human needed."
+      fi
+      curl -s -m 5 -X POST localhost:8000/notify -H 'Content-Type: application/json' -d "$(jq -n --arg t "$msg" '{text: $t}')" >/dev/null || true
     fi
     exit 0
   fi
