@@ -56,12 +56,10 @@ A hard cut is different: OSPF + BFD reroute in **0.74–0.85 s** by themselves, 
 | [1c](monitoring) | monitoring + NOC map | injected loss visible in 8 s, map red, exactly 1 alert (symptoms inhibited) | ✅ |
 | [1d](optics) | optical layer | model reproduces the plan's BER→loss table; trend alert 218 s before the first lost packet | ✅ |
 | [1e](analysis) | incident response | 0 vs 1,567 packets lost (above) | ✅ |
-| 1f | access network | drop cut → 1 ONT down, feeder cut → all 4; feeder vs drop localisation; work orders (live-tested in CI) | ✅ * |
+| 1f | access network | degrading drop connector → **work order naming the drop of ONT3 at 127 s, 2 min before the ONT went dark**; other ONTs untouched; an early "repaired" report refused, the real one closed incident + issue ([data](results/1f-access-e2e.json)) | ✅ |
 | 2 | NetDevOps depth | [15/15 bad changes](results/bad-changes.md) caught statically · Batfish models OSPF 10/10, iBGP 12/12 · out-of-band edits detected and reverted | 🟨 |
 | 4 | QoS study | voice MOS (ITU-T G.107 E-model) per path | 🟨 |
 | [Portal](portal) | React web app | replay, what-if simulator, optical cliff explorer, 22 browser tests | ✅ |
-
-\* the access work-order flow through n8n is still to be verified end to end on the laptop.
 
 | NOC dashboard during an injected fault | Gray failure caught before any loss |
 |---|---|

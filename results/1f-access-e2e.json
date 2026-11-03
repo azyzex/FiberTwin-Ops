@@ -1,0 +1,18 @@
+{
+  "ont3_reachable_at_work_order": "yes",
+  "alert_margin": "3.959",
+  "work_order_s": "126",
+  "real_form_http": "200",
+  "incident": "INC-20261103-183325-drop:ont3",
+  "issue_state": "closed",
+  "early_form_http": "200",
+  "issue": "https://github.com/azyzex/FiberTwin-Ops/issues/22",
+  "early_state": "ticketed",
+  "alert_s": "119",
+  "dark_s": "246",
+  "events": [{"type":"detected","summary":"ont3 -3.3 dB while the other ONTs on spl1 are unchanged: the cause is on the drop"},{"type":"located","summary":"F3 on drop:ont3: ont3 -3.3 dB while the other ONTs on spl1 are unchanged: the cause is on the drop"},{"type":"work_order","summary":"Degradation on the DROP fibre of ont3 (between the splitter port and the customer). Estimated extra loss 3.3 dB; custome"},{"type":"closed","summary":"repaired by technician: cleaned and re-mated the SC/APC connector at the splitter port; measurements back to design"}],
+  "work_order_margin": "3.211",
+  "final_state": "closed",
+  "segment": "drop:ont3",
+  "others_reachable": "yes ",
+  "date": "2026-11-03T18:36:31Z"}
