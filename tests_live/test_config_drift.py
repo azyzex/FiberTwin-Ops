@@ -15,7 +15,8 @@ def drift(*args):
 
 
 def test_twin_starts_in_sync():
-    assert drift()["drift"] == {}
+    d = drift()["drift"]
+    assert d == {}, json.dumps(d)
 
 
 def test_manual_change_is_detected_and_reversed():
