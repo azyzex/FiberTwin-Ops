@@ -21,6 +21,10 @@ sys.path.insert(0, str(ROOT))
 from netgen import model  # noqa: E402
 
 SNAP = ROOT / "build" / "batfish" / "snapshot"
+# lines Batfish doesn't parse but that don't change what it computes (measured, Slice 2):
+#   the BFD block (Batfish doesn't model BFD; the live twin tests it) and FRR's eBGP default-policy knob
+KNOWN_IGNORED = ("bfd", "ip ospf bfd", "ip ospf bfd profile", "profile ", "detect-multiplier", "transmit-interval",
+                 "receive-interval", "no bgp ebgp-requires-policy")
 
 
 def concatenated(sot: dict, name: str, frr_conf: str) -> str:
@@ -84,12 +88,13 @@ def main() -> int:
             f"| OSPF sessions established | {est} | {exp_ospf} |",
             f"| iBGP sessions established | {bgp_est} | {exp_bgp} |"]
     routing_ok = est == exp_ospf and bgp_est == exp_bgp
-    only_bfd = all("bfd" in l.lower() for l in unrecognised if l)
+    unknown = [l for l in unrecognised if l and not l.startswith(KNOWN_IGNORED)]
+    only_bfd = not unknown
     if all(s == "PASSED" for s in ps["Status"]) and routing_ok:
         verdict = "Batfish fully understands these FRR configs"
     elif routing_ok and only_bfd:
-        verdict = ("Batfish models OSPF and BGP correctly; it only ignores the BFD lines. "
-                   "Usable for routing checks (BFD stays covered by the live twin)")
+        verdict = ("Batfish models OSPF and BGP correctly; it only ignores known-harmless lines (BFD block, "
+                   "eBGP default-policy knob). Usable for routing checks; BFD stays covered by the live twin")
     else:
         verdict = "Batfish does NOT model these FRR configs well enough (see above)"
     out += ["", f"**Verdict: {verdict}**"]
@@ -99,7 +104,9 @@ def main() -> int:
         with open(a.summary, "a", encoding="utf-8") as f:
             f.write(text)
     (ROOT / "build" / "batfish" / "report.md").write_bytes(text.encode())
-    return 0
+    if unknown:
+        print("unknown unparsed lines: " + "; ".join(unknown))
+    return 0 if routing_ok and only_bfd else 1
 
 
 if __name__ == "__main__":

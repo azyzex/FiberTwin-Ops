@@ -1,7 +1,9 @@
 name: batfish
 
-# Plan Slice 2: "Batfish parse test, then Batfish in CI if it works". Non-blocking: it measures whether
-# Batfish (offline config analysis, ~8 GB) models these FRR configs. Runs only in the cloud.
+# Plan Slice 2: "Batfish parse test, then Batfish in CI if it works". It works for OSPF/BGP (measured:
+# 10/10 OSPF and 12/12 iBGP sessions match the SoT; only BFD lines and one FRR knob are ignored), so the
+# job now FAILS if Batfish's computed sessions disagree with the SoT or an unknown line appears.
+# Not a required check (it needs a ~1 GB image and ~8 GB RAM, cloud only); the twin stays the gate.
 on:
   workflow_dispatch:
   pull_request:
@@ -10,7 +12,6 @@ on:
 jobs:
   parse-test:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
