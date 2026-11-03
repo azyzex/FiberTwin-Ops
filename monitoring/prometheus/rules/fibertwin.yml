@@ -21,8 +21,26 @@ groups:
             + ((max by (link) (ft_optical_margin_db) or (ft:link_zero + 99)) < bool 3)
           , 2)
 
+      # voice QoE: ITU-T G.107 E-model, simplified (same constants as analysis/qoe.py, the tested reference)
+      #   one-way delay = RTT/2 + 20 ms packetisation + 2 x jitter (jitter buffer); G.711 + PLC: Bpl = 25.1
+      - record: ft:voice_one_way_ms
+        expr: ft_probe_rtt_ms{class="voice"} / 2 + 20 + 2 * ft_probe_jitter_ms{class="voice"}
+      - record: ft:voice_r_factor
+        expr: |
+          93.2 - 0.024 * ft:voice_one_way_ms - 0.11 * clamp_min(ft:voice_one_way_ms - 177.3, 0)
+            - on (src, dst) 95 * (100 * max by (src, dst) (ft_probe_loss_ratio{class="voice"}))
+                / (100 * max by (src, dst) (ft_probe_loss_ratio{class="voice"}) + 25.1)
+      - record: ft:voice_mos
+        expr: clamp(1 + 0.035 * ft:voice_r_factor + 0.000007 * ft:voice_r_factor * (ft:voice_r_factor - 60) * (100 - ft:voice_r_factor), 1, 4.5)
+
   - name: fibertwin-alerts
     rules:
+      - alert: FtVoiceMosLow
+        expr: max by (src, dst) (ft:voice_mos) < 3.6
+        for: 30s
+        labels: { severity: warning }
+        annotations:
+          summary: "Voice quality on {{ $labels.src }} -> {{ $labels.dst }}: MOS {{ $value | printf \"%.2f\" }} (below 'fair')"
       - alert: FtLinkPacketLoss
         expr: ft:link_loss_ratio > 0.01
         for: 15s
