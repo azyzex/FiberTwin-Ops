@@ -3,6 +3,8 @@ import AccessPanel from './components/AccessPanel'
 import Inspector from './components/Inspector'
 import LinkCharts from './components/LinkCharts'
 import NetworkMap from './components/NetworkMap'
+import OpticalCliff from './components/OpticalCliff'
+import WhatIf from './components/WhatIf'
 import type { LayerToggles, Selection } from './components/NetworkMap'
 import Timeline from './components/Timeline'
 import { useReplay } from './useReplay'
@@ -12,8 +14,8 @@ type Tab = 'map' | 'access' | 'whatif' | 'optical'
 const TABS: { id: Tab; label: string; ready: boolean }[] = [
   { id: 'map', label: 'Network map', ready: true },
   { id: 'access', label: 'Access', ready: true },
-  { id: 'whatif', label: 'What-if', ready: false },
-  { id: 'optical', label: 'Optical cliff', ready: false },
+  { id: 'whatif', label: 'What-if', ready: true },
+  { id: 'optical', label: 'Optical cliff', ready: true },
 ]
 
 // ?replay=<name> picks a bundle in public/replay/; default = the recorded golden-path run
@@ -70,19 +72,20 @@ export default function App() {
         </nav>
       </header>
 
-      {bundle.meta.source === 'recorded' && (
+      {(tab === 'map' || tab === 'access') && bundle.meta.source === 'recorded' && (
         <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200" data-testid="recorded-banner">
           Replay of a recorded run of the twin{bundle.meta.recorded_at ? ` (${bundle.meta.recorded_at.slice(0, 10)})` : ''}. {bundle.meta.notes}
         </div>
       )}
 
-      {bundle.meta.source === 'synthetic' && (
+      {(tab === 'map' || tab === 'access') && bundle.meta.source === 'synthetic' && (
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-200" data-testid="synthetic-banner">
           Synthetic development data: shows how the portal works, not a measurement. Recorded runs of the twin replace it.
         </div>
       )}
 
-      {/* replay controls */}
+      {/* replay controls (only for the replay screens) */}
+      {(tab === 'map' || tab === 'access') && (
       <section className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
         <button type="button" onClick={r.toggle} className="rounded-md bg-sky-500 px-3 py-1 text-sm font-semibold text-slate-950" data-testid="play">
           {r.playing ? '❚❚ Pause' : '▶ Play'}
@@ -103,6 +106,7 @@ export default function App() {
           {snapshot.ts.slice(11, 19)} UTC · T+{Math.floor(elapsed / 60)}m{String(elapsed % 60).padStart(2, '0')}s
         </span>
       </section>
+      )}
 
       {tab === 'map' && (
         <>
@@ -146,6 +150,10 @@ export default function App() {
       )}
 
       {tab === 'access' && <AccessPanel topology={bundle.topology} snapshot={snapshot} />}
+
+      {tab === 'whatif' && <WhatIf topology={bundle.topology} />}
+
+      {tab === 'optical' && <OpticalCliff />}
 
       <footer className="pt-2 text-center text-[11px] text-slate-500">
         Read-only view. Every network change goes through a pull request, CI and human approval.
