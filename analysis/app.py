@@ -146,8 +146,21 @@ def alerts(payload: dict | None = None) -> dict:
         return _alerts()
 
 
+def reconcile(s: dict) -> None:
+    """Close drained incidents whose drain is no longer in main (the restore PR was merged):
+    the incident state follows the source of truth instead of being remembered."""
+    with closing(db()) as con:
+        for inc in con.execute("SELECT * FROM incidents WHERE state IN ('drained','draining') AND merge_sha IS NOT NULL").fetchall():
+            orig = json.loads(inc["original_costs"] or "{}")
+            if orig and all(s["links"][l]["ospf_cost"] == c for l, c in orig.items()):
+                con.execute("UPDATE incidents SET state='closed' WHERE id=?", (inc["id"],))
+                con.commit()
+                event(inc, "closed", "restore merged: links back to their original OSPF cost", once=True)
+
+
 def _alerts() -> dict:
     s = sot()
+    reconcile(s)
     c = logic.correlate(s, firing(), telemetry(s))
     if c.fault_class is None and not c.links:
         return {"incident": None, "action": "none", "reasons": c.evidence}
@@ -157,8 +170,10 @@ def _alerts() -> dict:
         # cooldown counts only drains that were really applied (merged), not proposals that were rejected
         recent = {r["fibre"]: r["created"] for r in con.execute(
             "SELECT fibre, created FROM incidents WHERE fibre IS NOT NULL AND merge_sha IS NOT NULL")}
-        inc = con.execute("SELECT * FROM incidents WHERE (fibre=? OR links=?) AND state NOT IN ('closed','reverted')",
-                          (c.fibre, json.dumps(c.links))).fetchone()
+        # same element AND same fault class: a cut (F2) on a fibre that had a gray failure (F1) is a new incident
+        inc = con.execute("SELECT * FROM incidents WHERE (fibre=? OR links=?) AND fault_class IS ? "
+                          "AND state NOT IN ('closed','reverted','ticketed')",
+                          (c.fibre, json.dumps(c.links), c.fault_class)).fetchone()
     if inc:   # already handling it: just report where we are
         return {"incident": inc["id"], "action": "none", "reasons": [f"incident {inc['id']} already open ({inc['state']})"],
                 "fault_class": inc["fault_class"], "fibre": inc["fibre"], "links": json.loads(inc["links"])}
@@ -325,6 +340,7 @@ def events_of(iid: str) -> list[dict]:
 
 @app.get("/incidents")
 def incidents() -> list[dict]:
+    reconcile(sot())
     with closing(db()) as c:
         return [dict(r) for r in c.execute("SELECT * FROM incidents ORDER BY created DESC LIMIT 50")]
 

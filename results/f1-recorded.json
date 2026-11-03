@@ -1,0 +1,2976 @@
+{
+ "meta": {
+  "scenario": "F1 gray failure of fibre F12, drained before the cliff (recorded run)",
+  "source": "recorded",
+  "recorded_at": "2026-11-02T23:50:10Z",
+  "notes": "Recorded from the twin: measured utilisation/loss, modelled OSNR margin, injected loss on F12 (time-compressed 4 dB/min). Packets lost on 2 customer streams: 0 (1567 without the drain)."
+ },
+ "topology": {
+  "contract_version": "0.1",
+  "nodes": [
+   {
+    "id": "r1",
+    "role": "core",
+    "label": "R1",
+    "site": "Tunis",
+    "loopback": "10.0.0.1",
+    "pos": {
+     "x": 200,
+     "y": 150
+    }
+   },
+   {
+    "id": "r2",
+    "role": "core",
+    "label": "R2",
+    "site": "Sousse",
+    "loopback": "10.0.0.2",
+    "pos": {
+     "x": 600,
+     "y": 150
+    }
+   },
+   {
+    "id": "r3",
+    "role": "core",
+    "label": "R3",
+    "site": "Mahdia",
+    "loopback": "10.0.0.3",
+    "pos": {
+     "x": 600,
+     "y": 500
+    }
+   },
+   {
+    "id": "r4",
+    "role": "core",
+    "label": "R4",
+    "site": "Sfax",
+    "loopback": "10.0.0.4",
+    "pos": {
+     "x": 200,
+     "y": 500
+    }
+   }
+  ],
+  "fibres": [
+   {
+    "id": "F12",
+    "a": "r1",
+    "b": "r2",
+    "length_km": 140,
+    "spans": 2
+   },
+   {
+    "id": "F23",
+    "a": "r2",
+    "b": "r3",
+    "length_km": 60,
+    "spans": 1
+   },
+   {
+    "id": "F34",
+    "a": "r3",
+    "b": "r4",
+    "length_km": 120,
+    "spans": 2
+   },
+   {
+    "id": "F41",
+    "a": "r4",
+    "b": "r1",
+    "length_km": 270,
+    "spans": 4
+   }
+  ],
+  "lightpaths": [
+   {
+    "id": "LP12",
+    "fibres": [
+     "F12"
+    ],
+    "wavelength": 1,
+    "ip_link": "L12"
+   },
+   {
+    "id": "LP41",
+    "fibres": [
+     "F41"
+    ],
+    "wavelength": 1,
+    "ip_link": "L41"
+   },
+   {
+    "id": "LP13",
+    "fibres": [
+     "F12",
+     "F23"
+    ],
+    "wavelength": 2,
+    "ip_link": "L13"
+   },
+   {
+    "id": "LP23",
+    "fibres": [
+     "F23"
+    ],
+    "wavelength": 1,
+    "ip_link": "L23"
+   },
+   {
+    "id": "LP34",
+    "fibres": [
+     "F34"
+    ],
+    "wavelength": 1,
+    "ip_link": "L34"
+   }
+  ],
+  "ip_links": [
+   {
+    "id": "L12",
+    "a": "r1",
+    "a_if": "eth1",
+    "b": "r2",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F12"
+    ]
+   },
+   {
+    "id": "L41",
+    "a": "r1",
+    "a_if": "eth2",
+    "b": "r4",
+    "b_if": "eth2",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F41"
+    ]
+   },
+   {
+    "id": "L13",
+    "a": "r1",
+    "a_if": "eth3",
+    "b": "r3",
+    "b_if": "eth3",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F12",
+     "F23"
+    ]
+   },
+   {
+    "id": "L23",
+    "a": "r2",
+    "a_if": "eth2",
+    "b": "r3",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F23"
+    ]
+   },
+   {
+    "id": "L34",
+    "a": "r3",
+    "a_if": "eth2",
+    "b": "r4",
+    "b_if": "eth1",
+    "capacity_mbps": 100,
+    "ospf_cost": 10,
+    "srlgs": [
+     "F34"
+    ]
+   }
+  ]
+ },
+ "frames": [
+  {
+   "ts": "2026-11-02T23:50:10Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 24.33
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.94
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 23.24
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.2
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.25
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:50:25Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 24.17
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.83
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 23.05
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.18
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.46
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 0.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:50:40Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 23.61
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.81
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.56
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.12
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.26
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 1.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:50:55Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.92
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.94
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.12
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.25
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.39
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 2.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:51:10Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.15
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.89
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.6
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.19
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.34
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 3.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:51:25Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.54
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.86
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.05
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.38
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.28
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "ok",
+     "extra_loss_db": 4.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:51:40Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 20.88
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.04
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 20.35
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.26
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.47
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 5.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:51:55Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 19.93
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.03
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 19.62
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.39
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.3
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 6.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:52:10Z",
+   "links": {
+    "L12": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 19.11
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.78
+    },
+    "L13": {
+     "health": "ok",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 18.93
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.14
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.18
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 7.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:52:25Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 18.44
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.97
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 18.05
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.28
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.23
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 8.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:52:40Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 17.54
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.97
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 17.3
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.15
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.23
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 9.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:52:55Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 16.68
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.99
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 16.36
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.3
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.31
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 10.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:53:10Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 15.64
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.04
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 15.43
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.2
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.32
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 11.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:53:25Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 14.75
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.82
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 14.69
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.23
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.24
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 12.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:53:40Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 13.79
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.13
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 13.75
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.26
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.4
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 13.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:53:55Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 12.9
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.85
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 12.71
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.04
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.42
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 14.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:54:10Z",
+   "links": {
+    "L12": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 10,
+     "osnr_margin_db": 11.81
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.92
+    },
+    "L13": {
+     "health": "warn",
+     "util_pct": 1.3,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 10,
+     "osnr_margin_db": 11.93
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.02
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.3
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 15.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:54:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 1.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 10.88
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.7,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.16
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 1.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 10.85
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.4,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.19
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.7,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.38
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 16.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:54:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.2,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 9.88
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 2.1,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.93
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.2,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 9.92
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 1.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.24
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 2.1,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.37
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 17.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:54:55Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 8.92
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.8,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.89
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 8.79
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.4,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.22
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.8,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.49
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 18.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:55:10Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 7.82
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.03
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 7.97
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.1
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.3
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 19.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:55:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 6.88
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.94
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 6.9
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.34
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.37
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 20.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:55:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 6.09
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.01
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 6.08
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.19
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.19
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 21.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:55:55Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 4.92
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.92
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 4.9
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.26
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.21
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 22.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:56:10Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 3.93
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.02
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 4.09
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.25
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.41
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 23.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:56:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 2.85
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.04
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 2.96
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.24
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.48
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 24.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:56:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 1.93
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.96
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 2.11
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.11
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.3
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 25.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:56:55Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 0.9
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.91
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 1.02
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.43
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.31
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "warn",
+     "extra_loss_db": 26.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:57:10Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": 0.06
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.97
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -0.21
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.28
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.37
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 27.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:57:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -0.96
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.97
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -1.05
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.13
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.43
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 28.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:57:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 45.455,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -2.02
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.02
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 53.333,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -1.97
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.33
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.31
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 29.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:57:55Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -3.07
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.04
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -3.01
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.13
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.32
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 30.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:58:10Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -3.97
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.99
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -3.95
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.28
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.27
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 31.85
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:58:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.52
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.89
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.51
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.05
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.35
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:58:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.37
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.99
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.41
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.23
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.44
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:58:55Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.42
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.98
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.51
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.4
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.34
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:59:10Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.3
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.01
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.49
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.43
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.27
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:59:25Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.5
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 22.03
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.45
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.29
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.32
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  },
+  {
+   "ts": "2026-11-02T23:59:40Z",
+   "links": {
+    "L12": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 0.7,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.5
+    },
+    "L41": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 1.35,
+     "ospf_cost": 10,
+     "osnr_margin_db": 21.98
+    },
+    "L13": {
+     "health": "drained",
+     "util_pct": 0.0,
+     "loss_pct": 100.0,
+     "latency_ms": 1.0,
+     "ospf_cost": 1000,
+     "osnr_margin_db": -4.41
+    },
+    "L23": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.3,
+     "ospf_cost": 10,
+     "osnr_margin_db": 29.23
+    },
+    "L34": {
+     "health": "ok",
+     "util_pct": 0.0,
+     "loss_pct": 0.0,
+     "latency_ms": 0.6,
+     "ospf_cost": 10,
+     "osnr_margin_db": 26.29
+    }
+   },
+   "fibres": {
+    "F12": {
+     "health": "crit",
+     "extra_loss_db": 32.0
+    },
+    "F23": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F34": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    },
+    "F41": {
+     "health": "ok",
+     "extra_loss_db": 0.0
+    }
+   },
+   "paths": {
+    "srv->h3": [
+     "r1",
+     "r4",
+     "r3"
+    ]
+   }
+  }
+ ],
+ "events": [
+  {
+   "ts": "2026-11-02T23:52:15.586Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "detected",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "every link on fibre F12 is degrading (OSNR margin lost: L12 5.1 dB, L13 4.2 dB); F12 is the only fibre they share (SRLG)"
+  },
+  {
+   "ts": "2026-11-02T23:52:15.598Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "located",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "F1 on F12: every link on fibre F12 is degrading (OSNR margin lost: L12 5.1 dB, L13 4.2 dB); F12 is the only fibre they share (SRLG) | received power normal on L12, L13: loss is inside a span, not at a receiver"
+  },
+  {
+   "ts": "2026-11-02T23:52:15.662Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "what_if_passed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "drain L12, L13: max utilisation 70% (limit 80%)"
+  },
+  {
+   "ts": "2026-11-02T23:52:21.439Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "pr_opened",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "PR #10: L12, L13 OSPF cost 1000",
+   "url": "https://github.com/azyzex/FiberTwin-Ops/pull/10"
+  },
+  {
+   "ts": "2026-11-02T23:53:46.162Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "ci_passed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "required CI checks passed: validate + temporary twin with live tests"
+  },
+  {
+   "ts": "2026-11-02T23:53:46.176Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "approved",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "merged by azyzex (human approval)",
+   "url": "https://github.com/azyzex/FiberTwin-Ops/pull/10"
+  },
+  {
+   "ts": "2026-11-02T23:54:30.929Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "deployed",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "pull-based deployer applied 9047cb4 (hitless frr-reload)"
+  },
+  {
+   "ts": "2026-11-02T23:55:31.004Z",
+   "incident_id": "INC-20261102-235215-F12",
+   "type": "verified",
+   "fault_class": "F1",
+   "element": "F12",
+   "summary": "traffic moved off the drained links, probes clean, no new alerts"
+  }
+ ]
+}
