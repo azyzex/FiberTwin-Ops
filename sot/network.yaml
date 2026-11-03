@@ -54,3 +54,36 @@ demands:
   - { src: srv, dst: h1, mbps: 30 }
   - { src: srv, dst: h3, mbps: 40 }
   - { src: h1,  dst: h3, mbps: 20 }
+
+# Access (Slice 1f): a GPON-inspired tree behind r3. OLT/ONTs are Linux nodes, the splitter is a Linux
+# bridge; optical power is MODELLED per ONT and per direction (plan §6.2), its effect applied to the real links.
+access:
+  budget:   # course values: B+ class, 1490 nm down / 1310 nm up
+    olt_tx_dbm: 3.0
+    ont_tx_dbm: 2.0
+    ont_sensitivity_dbm: -27.0
+    olt_sensitivity_dbm: -28.0
+    alpha_down_db_km: 0.30
+    alpha_up_db_km: 0.35
+    connectors: 4
+    connector_db: 0.3
+    splices: 6
+    splice_db: 0.1
+  olts:
+    olt1:
+      router: r3
+      router_if: eth5
+      uplink_if: eth1
+      uplink_subnet: 10.3.10.0/30
+      pon_if: eth2
+      pon_subnet: 100.64.10.0/24
+      down_mbps: 2.5          # GPON 2.488 Gbit/s down, 1.244 up, scaled 1:1000, shared by all ONTs
+      up_mbps: 1.2
+      pos: { x: 800, y: 500 }
+  splitters:
+    spl1: { olt: olt1, ratio: 32, loss_db: 17.5, feeder_km: 8.0, pos: { x: 920, y: 500 } }
+  onts:
+    ont1: { splitter: spl1, port: 1, drop_km: 0.4 }
+    ont2: { splitter: spl1, port: 2, drop_km: 0.7 }
+    ont3: { splitter: spl1, port: 3, drop_km: 1.1 }
+    ont4: { splitter: spl1, port: 4, drop_km: 1.6 }

@@ -129,6 +129,35 @@ def telemetry(s: dict) -> dict[str, dict]:
     return t
 
 
+def pon_telemetry() -> dict[str, dict]:
+    """Per ONT, worst direction: how far below design the margin is (shift), and the margin itself."""
+    meas: dict[tuple[str, str], float] = {}
+    design: dict[tuple[str, str], float] = {}
+    for r in prom("avg_over_time(ft_pon_margin_db[30s])"):
+        meas[(r["metric"]["ont"], r["metric"]["direction"])] = float(r["value"][1])
+    for r in prom("ft_pon_design_margin_db"):
+        design[(r["metric"]["ont"], r["metric"]["direction"])] = float(r["value"][1])
+    out: dict[str, dict] = {}
+    for (ont, d), m in meas.items():
+        o = out.setdefault(ont, {"shift_db": 0.0, "margin_db": 99.0})
+        o["shift_db"] = max(o["shift_db"], design.get((ont, d), m) - m)
+        o["margin_db"] = min(o["margin_db"], m)
+    return out
+
+
+def minutes_to_sensitivity(onts: list[str]) -> float | None:
+    """At the current slope of the worst margin, minutes until it reaches 0 dB (errors start)."""
+    worst = None
+    for r in prom("deriv(ft_pon_margin_db[5m])"):
+        if r["metric"]["ont"] in onts and float(r["value"][1]) < 0:
+            m = next((float(x["value"][1]) for x in prom(f'ft_pon_margin_db{{ont="{r["metric"]["ont"]}",'
+                                                         f'direction="{r["metric"]["direction"]}"}}')), None)
+            if m is not None and m > 0:
+                t = m / -float(r["value"][1]) / 60
+                worst = t if worst is None else min(worst, t)
+    return worst
+
+
 def firing() -> list[dict]:
     return [r["metric"] for r in prom('ALERTS{alertstate="firing"}')]
 
@@ -162,6 +191,8 @@ def _alerts() -> dict:
     s = sot()
     reconcile(s)
     c = logic.correlate(s, firing(), telemetry(s))
+    if c.fault_class is None and not c.links and s.get("access"):
+        c = logic.correlate_access(s, pon_telemetry())          # nothing in the core: look at the access tree
     if c.fault_class is None and not c.links:
         return {"incident": None, "action": "none", "reasons": c.evidence}
     key = c.fibre or ",".join(c.links)
@@ -172,7 +203,7 @@ def _alerts() -> dict:
             "SELECT fibre, created FROM incidents WHERE fibre IS NOT NULL AND merge_sha IS NOT NULL")}
         # same element AND same fault class: a cut (F2) on a fibre that had a gray failure (F1) is a new incident
         inc = con.execute("SELECT * FROM incidents WHERE (fibre=? OR links=?) AND fault_class IS ? "
-                          "AND state NOT IN ('closed','reverted','ticketed')",
+                          "AND state NOT IN ('closed','reverted')",
                           (c.fibre, json.dumps(c.links), c.fault_class)).fetchone()
     if inc:   # already handling it: just report where we are
         return {"incident": inc["id"], "action": "none", "reasons": [f"incident {inc['id']} already open ({inc['state']})"],
@@ -253,14 +284,28 @@ def ticket(iid: str) -> dict:
         return {"issue": inc["issue_url"]}
     why = {"F1b": "Receiver-side loss on one link (dirty connector / patch after the last amplifier). "
                   "A config change can't fix it: clean or replace the patch at the receiving end.",
-           "F2": "Fibre cut. OSPF/BFD already rerouted traffic; no config change. Dispatch a splicing team."
+           "F2": "Fibre cut. OSPF/BFD already rerouted traffic; no config change. Dispatch a splicing team.",
            }.get(inc["fault_class"], "Degradation that matches no single fibre: investigate.")
+    if inc["fault_class"] in ("F3", "F4"):
+        seg = inc["fibre"]
+        onts = json.loads(inc["links"])
+        tel = pon_telemetry()
+        extra = max((tel.get(o, {}).get("shift_db", 0) for o in onts), default=0)
+        where = ("the shared FEEDER between the OLT and splitter " + seg.split(":")[1]) if seg.startswith("feeder:")             else "the DROP fibre of " + ", ".join(onts) + " (between the splitter port and the customer)"
+        eta = minutes_to_sensitivity(onts)
+        why = (f"{'Cut' if inc['fault_class'] == 'F4' else 'Degradation'} on {where}. "
+               f"Estimated extra loss {extra:.1f} dB; customers affected: {', '.join(onts)}. "
+               + (f"At the current trend the first customer reaches its receiver sensitivity in ~{eta:.0f} min. "
+                  if eta and inc["fault_class"] == "F3" else "")
+               + "No protection path in a GPON tree and no config change can fix it: check / clean connectors "
+                 "and look for bends on that segment. When done, submit the 'repaired' form: "
+                 "http://localhost:5678/form/fibertwin-repaired")
     ev = [e["summary"] for e in events_of(iid) if e["type"] in ("detected", "located")]
     issue = gh("POST", "/issues", {"title": f"[{inc['fault_class'] or '?'}] {inc['fibre'] or ', '.join(json.loads(inc['links']))}: work order ({iid})",
                                     "body": why + "\n\n**Evidence**\n" + "\n".join(f"- {e}" for e in ev),
                                     "labels": ["incident"]})
     update(iid, issue_url=issue["html_url"], state="ticketed")
-    event(inc, "work_order" if inc["fault_class"] == "F1b" else "ticket", why, issue["html_url"])
+    event(inc, "work_order" if inc["fault_class"] in ("F1b", "F3", "F4") else "ticket", why, issue["html_url"])
     slack(f":ticket: *{iid}*: {why} {issue['html_url']}")
     return {"issue": issue["html_url"]}
 
@@ -324,6 +369,31 @@ def verify(iid: str) -> dict:
     event(inc, "revert_opened", "; ".join(v.reasons), pr["html_url"], once=True)
     slack(f":warning: *{iid}*: drain did not restore service ({'; '.join(v.reasons)}). Revert PR: {pr['html_url']}")
     return {"recovered": False, "reasons": v.reasons, "revert_pr": pr["html_url"]}
+
+
+@app.post("/incidents/{iid}/repaired")
+def repaired(iid: str, body: dict | None = None) -> dict:
+    """The technician says it's fixed (n8n form). Close only if the measurements agree."""
+    inc = get_incident(iid)
+    note = (body or {}).get("note", "")
+    if inc["fault_class"] in ("F3", "F4"):
+        tel = pon_telemetry()
+        bad = {o: round(tel.get(o, {}).get("shift_db", 99), 1) for o in json.loads(inc["links"])
+               if tel.get(o, {}).get("shift_db", 99) > 1.0}
+        if bad:
+            slack(f":x: *{iid}*: technician reported a repair, but {bad} are still below design (dB). Incident stays open.")
+            raise HTTPException(409, f"still degraded: {bad}")
+    update(iid, state="closed")
+    event(inc, "closed", f"repaired by technician{': ' + note if note else ''}; measurements back to design", once=True)
+    slack(f":white_check_mark: *{iid}* closed: repair confirmed by the measurements. {note}")
+    if inc["issue_url"]:
+        try:
+            num = inc["issue_url"].rstrip("/").split("/")[-1]
+            gh("POST", f"/issues/{num}/comments", {"body": f"Repaired and verified by the measurements. {note}"})
+            gh("PATCH", f"/issues/{num}", {"state": "closed"})
+        except Exception as e:
+            print(f"closing issue: {e}", flush=True)
+    return {"closed": True}
 
 
 @app.post("/notify")

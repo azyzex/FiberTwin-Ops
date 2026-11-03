@@ -15,6 +15,8 @@ HTTP API (port 8081):
   POST   /fault/span  {"fibre":"F12","span":0,"extra_db":5}          set loss inside a span (L1)
   POST   /fault/ramp  {"fibre":"F12","span":0,"to_db":30,"db_per_min":6}   degrade gradually (gray failure)
   POST   /fault/rx    {"link":"L23","extra_db":10}      loss after the last amplifier, one link (L3)
+  POST   /fault/pon   {"segment":"feeder:spl1"|"drop:ont2","extra_db":6}   access: dirty connector / bend
+  POST   /fault/pon-ramp {"segment":"drop:ont2","to_db":12,"db_per_min":2}  access degradation
   DELETE /faults                                        repair everything
 """
 from __future__ import annotations
@@ -31,6 +33,7 @@ import docker
 import yaml
 from prometheus_client import Gauge, start_http_server
 
+from optics import access as pon
 from optics.model import OpticalParams, link_optics
 
 PREFIX = os.getenv("FT_PREFIX", "clab-ft-core-")
@@ -45,6 +48,8 @@ lock = threading.Lock()
 span_faults: dict[tuple[str, int], float] = {}
 ramps: dict[tuple[str, int], dict] = {}
 rx_faults: dict[str, float] = {}
+pon_faults: dict[str, float] = {}               # access segment ('feeder:spl1', 'drop:ont2') -> extra dB
+pon_ramps: dict[str, dict] = {}
 applied: dict[tuple[str, str], str] = {}        # (node, ifc) -> last netem args
 last_state: dict = {}
 
@@ -56,6 +61,12 @@ BER = Gauge("ft_optical_pre_fec_ber", "Pre-FEC BER (model)", L)
 PLR = Gauge("ft_optical_applied_plr", "Packet loss ratio applied to the link with netem (model output)", L)
 DESIGN = Gauge("ft_optical_design_margin_db", "As-built OSNR margin with no fault (design value)", L)
 TRUTH_SPAN = Gauge("ft_truth_span_extra_loss_db", "GROUND TRUTH, evaluation only: injected loss inside a span", ["fibre", "span"])
+PL = ["ont", "direction"]
+PON_RX = Gauge("ft_pon_rx_power_dbm", "Measured received power on the PON path (ONT for down, OLT for up), with noise", PL)
+PON_MARGIN = Gauge("ft_pon_margin_db", "Measured margin to receiver sensitivity (BER 1e-10); <0 = errors", PL)
+PON_DESIGN = Gauge("ft_pon_design_margin_db", "As-built margin with no fault (design value)", PL)
+PON_PLR = Gauge("ft_pon_applied_plr", "Packet loss applied on the PON path with netem (model output)", PL)
+TRUTH_PON = Gauge("ft_truth_pon_extra_loss_db", "GROUND TRUTH, evaluation only: injected loss on an access segment", ["segment"])
 TRUTH_RX = Gauge("ft_truth_rx_extra_loss_db", "GROUND TRUTH, evaluation only: injected loss before a receiver", L)
 
 
@@ -91,6 +102,51 @@ def apply_netem(links: dict, plrs: dict[str, float], force: bool = False) -> Non
             except Exception as e:
                 applied.pop((node, ifc), None)
                 print(f"netem {node}:{ifc}: {e}", flush=True)
+
+
+def access_rows() -> list[dict]:
+    f = BUILD / "access.tsv"
+    if not f.exists():
+        return []
+    rows = []
+    for line in f.read_text().splitlines():
+        if line and not line.startswith("#"):
+            ont, spl, spl_if, ont_if, drop_km, feeder_km = line.split("\t")
+            rows.append({"ont": ont, "splitter": spl, "splitter_if": spl_if, "ont_if": ont_if,
+                         "delay_us": str(round((float(drop_km) + float(feeder_km)) * 5))})
+    return rows
+
+
+def tick_access(sot: dict, force: bool) -> None:
+    """PON budget per ONT and direction; downstream effect on the splitter port, upstream on the ONT."""
+    if not sot.get("access"):
+        return
+    now = time.time()
+    with lock:
+        for seg, r in list(pon_ramps.items()):
+            v = r["from_db"] + r["db_per_min"] * (now - r["t0"]) / 60
+            pon_faults[seg] = min(v, r["to_db"])
+            if v >= r["to_db"]:
+                pon_ramps.pop(seg)
+        extra = dict(pon_faults)
+    targets: dict[str, dict] = {}
+    for row in access_rows():
+        for d in ("down", "up"):
+            pp = pon.path(sot, row["ont"], d, extra)
+            design = pon.path(sot, row["ont"], d)
+            PON_RX.labels(row["ont"], d).set(pp.rx_dbm + random.gauss(0, POWER_NOISE_DB))
+            PON_MARGIN.labels(row["ont"], d).set(pp.margin_db + random.gauss(0, POWER_NOISE_DB))
+            PON_DESIGN.labels(row["ont"], d).set(design.margin_db)
+            PON_PLR.labels(row["ont"], d).set(pp.plr)
+            end = f"{row['splitter']}:{row['splitter_if']}" if d == "down" else f"{row['ont']}:{row['ont_if']}"
+            targets[end] = {"ends": [end], "delay_us": row["delay_us"], "plr": pp.plr}
+    for seg in [f"feeder:{s}" for s in sot["access"]["splitters"]] + [f"drop:{o}" for o in sot["access"]["onts"]]:
+        TRUTH_PON.labels(seg).set(extra.get(seg, 0.0))
+    apply_netem({k: {"ends": v["ends"], "delay_us": v["delay_us"]} for k, v in targets.items()},
+                {k: v["plr"] for k, v in targets.items()}, force)
+    last_state["pon"] = {"faults": {k: round(v, 2) for k, v in extra.items()},
+                         "paths": {f"{r['ont']}/{d}": round(pon.path(sot, r["ont"], d, extra).margin_db, 2)
+                                   for r in access_rows() for d in ("down", "up")}}
 
 
 def tick(sot: dict, p: OpticalParams, links: dict, force: bool) -> None:
@@ -158,6 +214,12 @@ class Api(BaseHTTPRequestHandler):
                                   "db_per_min": float(b["db_per_min"]), "t0": time.time()}
                 elif self.path == "/fault/rx":
                     rx_faults[b["link"]] = float(b["extra_db"])
+                elif self.path == "/fault/pon":
+                    pon_ramps.pop(b["segment"], None)
+                    pon_faults[b["segment"]] = float(b["extra_db"])
+                elif self.path == "/fault/pon-ramp":
+                    pon_ramps[b["segment"]] = {"from_db": pon_faults.get(b["segment"], 0.0), "to_db": float(b["to_db"]),
+                                               "db_per_min": float(b["db_per_min"]), "t0": time.time()}
                 else:
                     return self._send(404, {"error": "not found"})
             self._send(200, {"ok": True})
@@ -168,7 +230,7 @@ class Api(BaseHTTPRequestHandler):
         if self.path != "/faults":
             return self._send(404, {"error": "not found"})
         with lock:
-            span_faults.clear(); ramps.clear(); rx_faults.clear()
+            span_faults.clear(); ramps.clear(); rx_faults.clear(); pon_faults.clear(); pon_ramps.clear()
         self._send(200, {"ok": True})
 
     def log_message(self, *args):  # quiet
@@ -187,6 +249,7 @@ def main() -> None:
         try:
             # re-assert every netem once a minute: the twin may have been redeployed underneath us
             tick(sot, p, links_tsv(), force=(n % 12 == 0))
+            tick_access(sot, force=(n % 12 == 0))
         except Exception as e:
             print(f"tick: {e}", flush=True)
         n += 1

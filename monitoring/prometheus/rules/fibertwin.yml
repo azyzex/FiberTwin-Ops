@@ -61,6 +61,25 @@ groups:
         labels: { severity: warning }
         annotations:
           summary: "OSNR margin on {{ $labels.link }} falling: cliff in < 10 min at this rate"
+      # access (GPON budget per ONT and direction): act before the ONT reaches its receiver sensitivity
+      - alert: FtPonMarginLow
+        expr: min by (ont) (ft_pon_margin_db) < 3
+        for: 15s
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.ont }}: optical margin {{ $value | printf \"%.1f\" }} dB to receiver sensitivity"
+      - alert: FtPonMarginTrend
+        expr: (min by (ont) (predict_linear(ft_pon_margin_db[2m], 600)) < 0) and (min by (ont) (deriv(ft_pon_margin_db[2m])) < -0.002)
+        for: 30s
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.ont }}: optical margin falling, sensitivity reached in < 10 min at this rate"
+      - alert: FtOntLos
+        expr: min by (ont) (ft_pon_margin_db) < -5
+        for: 5s
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.ont }}: loss of signal (ONT down)"
       # symptom seen by customers (end to end); suppressed in Alertmanager when a link alert explains it
       - alert: FtPathLoss
         expr: max by (src, dst) (ft_probe_loss_ratio) > 0.02

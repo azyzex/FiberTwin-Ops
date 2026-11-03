@@ -29,6 +29,12 @@ interface {{ i.name }}
  ip address {{ i.ip }}
 !
 {% endfor %}
+{% for prefix, nh in r.static_routes %}
+ip route {{ prefix }} {{ nh }}
+{% endfor %}
+{% if r.static_routes %}
+!
+{% endif %}
 router ospf
  ospf router-id 10.0.0.{{ r.id }}
  passive-interface lo

@@ -39,6 +39,7 @@ class Router:
     ifaces: list[Iface] = field(default_factory=list)
     customer_nets: list[str] = field(default_factory=list)
     upstream: dict | None = None   # set on the border router
+    static_routes: list[tuple[str, str]] = field(default_factory=list)   # (prefix, next hop)
 
 
 def _hosts(subnet: str) -> list[str]:
@@ -100,6 +101,25 @@ def validate(sot: dict) -> None:
     for uid, u in sot["upstreams"].items():
         use_if(u["attach"]["router"], u["attach"]["router_if"], uid)
         use_net(u["attach"]["subnet"], uid); use_net(u["server"]["subnet"], uid)
+    acc = sot.get("access")
+    if acc:
+        for oid, o in acc["olts"].items():
+            if o["router"] not in routers:
+                errors.append(f"{oid}: unknown router {o['router']}")
+            use_if(o["router"], o["router_if"], oid)
+            use_net(o["uplink_subnet"], oid); use_net(o["pon_subnet"], oid)
+        ports: set[tuple[str, int]] = set()
+        for sid, sp in acc["splitters"].items():
+            if sp["olt"] not in acc["olts"]:
+                errors.append(f"{sid}: unknown OLT {sp['olt']}")
+        for nid, n in acc["onts"].items():
+            if n["splitter"] not in acc["splitters"]:
+                errors.append(f"{nid}: unknown splitter {n['splitter']}")
+            elif not 1 <= n["port"] <= acc["splitters"][n["splitter"]]["ratio"]:
+                errors.append(f"{nid}: port {n['port']} outside 1..{acc['splitters'][n['splitter']]['ratio']}")
+            if (n["splitter"], n["port"]) in ports:
+                errors.append(f"{nid}: splitter port {n['splitter']}:{n['port']} used twice")
+            ports.add((n["splitter"], n["port"]))
     if errors:
         raise SotError("; ".join(errors))
 
@@ -120,6 +140,12 @@ def routers(sot: dict) -> dict[str, Router]:
         r = out[c["router"]]
         r.ifaces.append(Iface(c["router_if"], gw, f"customer LAN ({cid})", "customer"))
         r.customer_nets.append(c["subnet"])
+    for oid, o in (sot.get("access") or {}).get("olts", {}).items():
+        r_ip, olt_ip = _hosts(o["uplink_subnet"])[:2]
+        r = out[o["router"]]
+        r.ifaces.append(Iface(o["router_if"], f"{r_ip}/30", f"uplink to {oid} (PON {o['pon_subnet']})", "customer"))
+        r.static_routes.append((o["pon_subnet"], olt_ip))
+        r.customer_nets.append(o["pon_subnet"])
     for uid, u in sot["upstreams"].items():
         at = u["attach"]
         r_ip, up_ip = _hosts(at["subnet"])[:2]
@@ -154,3 +180,24 @@ def hosts(sot: dict) -> list[dict]:
         res.append({"name": cid, "router": c["router"], "router_if": c["router_if"],
                     "ip": f"{net.network_address + 10}/{net.prefixlen}", "gw": _hosts(c["subnet"])[0]})
     return res
+
+
+def access(sot: dict) -> dict:
+    """Derived access data: OLT gateway, ONT addresses and the tree (feeder + drops) for the twin."""
+    acc = sot.get("access")
+    if not acc:
+        return {"olts": [], "splitters": [], "onts": []}
+    olts, spls, onts = [], [], []
+    for oid, o in acc["olts"].items():
+        r_ip, olt_ip = _hosts(o["uplink_subnet"])[:2]
+        pon = ipaddress.ip_network(o["pon_subnet"])
+        olts.append({"name": oid, **o, "router_ip": r_ip, "uplink_ip": f"{olt_ip}/30",
+                     "pon_gw": f"{pon.network_address + 1}/{pon.prefixlen}"})
+    for sid, sp in acc["splitters"].items():
+        spls.append({"name": sid, **sp})
+    for nid, n in acc["onts"].items():
+        o = acc["olts"][acc["splitters"][n["splitter"]]["olt"]]
+        pon = ipaddress.ip_network(o["pon_subnet"])
+        onts.append({"name": nid, **n, "ip": f"{pon.network_address + 10 + n['port']}/{pon.prefixlen}",
+                     "gw": str(pon.network_address + 1), "splitter_if": f"eth{n['port'] + 1}"})
+    return {"olts": olts, "splitters": spls, "onts": onts}
