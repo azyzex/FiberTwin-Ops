@@ -67,3 +67,8 @@ exit
 
 def test_a_real_bfd_change_is_still_drift():
     assert normalise(parse_reload_test(REAL_BFD), "")["add"] == ["bfd > profile core > detect-multiplier 5"]
+
+
+def test_host_domainname_is_not_drift():
+    d = {"delete": ["no domainname localdomain", "domainname lab.local"], "add": []}
+    assert normalise(d, "") == {"delete": [], "add": []}
