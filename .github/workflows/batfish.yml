@@ -1,0 +1,30 @@
+name: batfish
+
+# Plan Slice 2: "Batfish parse test, then Batfish in CI if it works". Non-blocking: it measures whether
+# Batfish (offline config analysis, ~8 GB) models these FRR configs. Runs only in the cloud.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["netgen/**", "sot/**", ".github/workflows/batfish.yml"]
+
+jobs:
+  parse-test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt pybatfish
+      - name: Start Batfish
+        run: |
+          docker run -d --name batfish -p 9996:9996 -p 9997:9997 batfish/batfish:latest
+          for i in $(seq 1 90); do curl -sf localhost:9996 >/dev/null 2>&1 && break; nc -z localhost 9996 && break; sleep 2; done
+          sleep 10
+      - name: Render configs and run the parse test
+        run: |
+          python -m netgen.render
+          python netgen/batfish_check.py --summary "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: batfish-report, path: build/batfish/ }

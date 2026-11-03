@@ -54,6 +54,14 @@ def load(path: Path = SOT) -> dict:
 def validate(sot: dict) -> None:
     routers, fibres, links = sot["routers"], sot["fibres"], sot["links"]
     errors: list[str] = []
+    ids: dict[int, str] = {}
+    for name, r in routers.items():          # router-id / loopback 10.0.0.<id> must be unique
+        if r["id"] in ids:
+            errors.append(f"{name}: router id {r['id']} already used by {ids[r['id']]}")
+        ids[r["id"]] = name
+    for uid, u in sot.get("upstreams", {}).items():
+        if u["asn"] == sot["meta"]["core_asn"]:
+            errors.append(f"{uid}: upstream ASN {u['asn']} equals our own ASN (the eBGP session would be iBGP)")
     for lid, l in links.items():
         for end in ("a", "b"):
             if l[end] not in routers:
