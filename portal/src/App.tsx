@@ -16,7 +16,9 @@ const TABS: { id: Tab; label: string; ready: boolean }[] = [
   { id: 'optical', label: 'Optical cliff', ready: false },
 ]
 
-const REPLAY_URL = `${import.meta.env.BASE_URL}replay/synthetic-f1.json`
+// ?replay=<name> picks a bundle in public/replay/; default = the recorded golden-path run
+const REPLAY_NAME = new URLSearchParams(window.location.search).get('replay') ?? 'f1-recorded'
+const REPLAY_URL = `${import.meta.env.BASE_URL}replay/${REPLAY_NAME.replace(/[^a-z0-9-]/gi, '')}.json`
 
 export default function App() {
   const r = useReplay(REPLAY_URL)
@@ -67,6 +69,12 @@ export default function App() {
           ))}
         </nav>
       </header>
+
+      {bundle.meta.source === 'recorded' && (
+        <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200" data-testid="recorded-banner">
+          Replay of a recorded run of the twin{bundle.meta.recorded_at ? ` (${bundle.meta.recorded_at.slice(0, 10)})` : ''}. {bundle.meta.notes}
+        </div>
+      )}
 
       {bundle.meta.source === 'synthetic' && (
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-200" data-testid="synthetic-banner">

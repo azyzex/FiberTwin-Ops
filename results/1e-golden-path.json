@@ -1,0 +1,119 @@
+{
+ "date": "2026-11-02T23:49:12.782122+00:00",
+ "scenario": "F1 gray failure, F12 span 0",
+ "runs": {
+  "without": {
+   "ramp_db_per_min": 4.0,
+   "to_db": 32.0,
+   "detected_s": 130.3,
+   "model_loss_starts_s": 420.1,
+   "streams": {
+    "srv->h1 (L12)": {
+     "packets": 570005,
+     "lost": 780,
+     "loss_pct": 0.137
+    },
+    "srv->h3 (L13)": {
+     "packets": 570005,
+     "lost": 787,
+     "loss_pct": 0.138
+    }
+   },
+   "lost_total": 1567
+  },
+  "with": {
+   "ramp_db_per_min": 4.0,
+   "to_db": 32.0,
+   "detected_s": 132.6,
+   "incident": "INC-20261102-235215-F12",
+   "pr": "https://github.com/azyzex/FiberTwin-Ops/pull/10",
+   "pr_opened_s": 132.6,
+   "ci_green_s": 217.0,
+   "merged_s": 220.9,
+   "deployed_s": 249.5,
+   "merge_sha": "9047cb4bc833cd4a98c78e839d118a8a0a90df11",
+   "model_loss_starts_s": 417.9,
+   "streams": {
+    "srv->h1 (L12)": {
+     "packets": 570004,
+     "lost": 0,
+     "loss_pct": 0
+    },
+    "srv->h3 (L13)": {
+     "packets": 570004,
+     "lost": 0,
+     "loss_pct": 0
+    }
+   },
+   "lost_total": 0,
+   "events": [
+    {
+     "ts": "2026-11-02T23:52:15.586Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "detected",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "every link on fibre F12 is degrading (OSNR margin lost: L12 5.1 dB, L13 4.2 dB); F12 is the only fibre they share (SRLG)"
+    },
+    {
+     "ts": "2026-11-02T23:52:15.598Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "located",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "F1 on F12: every link on fibre F12 is degrading (OSNR margin lost: L12 5.1 dB, L13 4.2 dB); F12 is the only fibre they share (SRLG) | received power normal on L12, L13: loss is inside a span, not at a receiver"
+    },
+    {
+     "ts": "2026-11-02T23:52:15.662Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "what_if_passed",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "drain L12, L13: max utilisation 70% (limit 80%)"
+    },
+    {
+     "ts": "2026-11-02T23:52:21.439Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "pr_opened",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "PR #10: L12, L13 OSPF cost 1000",
+     "url": "https://github.com/azyzex/FiberTwin-Ops/pull/10"
+    },
+    {
+     "ts": "2026-11-02T23:53:46.162Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "ci_passed",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "required CI checks passed: validate + temporary twin with live tests"
+    },
+    {
+     "ts": "2026-11-02T23:53:46.176Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "approved",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "merged by azyzex (human approval)",
+     "url": "https://github.com/azyzex/FiberTwin-Ops/pull/10"
+    },
+    {
+     "ts": "2026-11-02T23:54:30.929Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "deployed",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "pull-based deployer applied 9047cb4 (hitless frr-reload)"
+    },
+    {
+     "ts": "2026-11-02T23:55:31.004Z",
+     "incident_id": "INC-20261102-235215-F12",
+     "type": "verified",
+     "fault_class": "F1",
+     "element": "F12",
+     "summary": "traffic moved off the drained links, probes clean, no new alerts"
+    }
+   ]
+  }
+ }
+}

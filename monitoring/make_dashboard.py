@@ -158,7 +158,11 @@ def build() -> dict:
     return {
         "uid": "fibertwin-noc", "title": "FiberTwin NOC", "tags": ["fibertwin"], "timezone": "browser",
         "refresh": "5s", "time": {"from": "now-15m", "to": "now"}, "schemaVersion": 41, "version": 1,
-        "editable": True, "panels": panels, "annotations": {"list": []},
+        "editable": True, "panels": panels,
+        # incident timeline drawn on every graph: one marker per event, from the analysis API's metric
+        "annotations": {"list": [{"name": "Incident timeline", "datasource": DS, "enable": True, "iconColor": "#f97316",
+                                  "expr": "ft_incident_event", "step": "15s", "titleFormat": "{{type}}",
+                                  "textFormat": "{{incident}}", "useValueForTime": True}]},
     }
 
 
