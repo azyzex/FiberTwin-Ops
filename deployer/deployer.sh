@@ -44,7 +44,17 @@ drifted() {
 }
 if [ "$TARGET" = "$CURRENT" ]; then
   missing=$(drifted)
-  [ -z "$missing" ] && exit 0
+  if [ -z "$missing" ]; then
+    # F5: out-of-band config changes (someone edited a router by hand). Git is the truth: put it back.
+    cfg=$("$VENV/bin/python" twin/config_drift.py --json 2>/dev/null || true)
+    if [ -n "$cfg" ] && [ "$(echo "$cfg" | jq -r '.drift | length')" != "0" ]; then
+      log "DRIFT out-of-band config change: $(echo "$cfg" | jq -c '.drift')"
+      out=$("$VENV/bin/python" twin/config_drift.py --json --reapply 2>/dev/null || true)
+      log "APPLY re-applied Git config on $(echo "$out" | jq -r '.reapplied | join(",")'); still drifted: $(echo "$out" | jq -c '.still_drifted')"
+      curl -s -m 5 -X POST localhost:8000/notify -H 'Content-Type: application/json'         -d "$(jq -n --arg t ":warning: Out-of-band change on $(echo "$cfg" | jq -r '.drift | keys | join(",")') reverted to the Git config. $(echo "$cfg" | jq -c '.drift')" '{text: $t}')" >/dev/null || true
+    fi
+    exit 0
+  fi
   log "DRIFT running twin differs from main (missing $missing) -> redeploy"
   if bash twin/deploy.sh >>"$LOG" 2>&1 && "$VENV/bin/python" -m pytest -q tests_live -p no:cacheprovider >>"$LOG" 2>&1; then
     log "DONE drift repaired at $TARGET"
