@@ -23,6 +23,11 @@ jobs:
         run: python -m netgen.render
       - name: Unit tests (SoT rules, golden configs, capacity + SRLG what-if)
         run: pytest -q tests monitoring/exporter/test_parsing.py
+      - name: Prometheus rules (promtool check + unit tests) and Alertmanager config (amtool)
+        run: |
+          docker run --rm -v "$PWD/monitoring:/m" --entrypoint promtool prom/prometheus:v3.5.0 check rules /m/prometheus/rules/fibertwin.yml
+          docker run --rm -v "$PWD/monitoring:/m" -w /m/prometheus/tests --entrypoint promtool prom/prometheus:v3.5.0 test rules rules_test.yml
+          docker run --rm -v "$PWD/monitoring:/m" --entrypoint amtool prom/alertmanager:v0.28.1 check-config /m/alertmanager/alertmanager.yml
       - name: Diff of generated configs vs main (what this change does to the routers)
         if: github.event_name == 'pull_request'
         run: |

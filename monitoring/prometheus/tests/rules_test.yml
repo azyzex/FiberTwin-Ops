@@ -1,0 +1,65 @@
+# promtool unit tests for the alert rules: run in CI with
+#   promtool test rules monitoring/prometheus/tests/rules_test.yml
+rule_files: [../rules/fibertwin.yml]
+evaluation_interval: 5s
+
+tests:
+  # healthy voice path (RTT 2.3 ms, jitter 0.1 ms, no loss): MOS ~4.4, no alert
+  - interval: 5s
+    input_series:
+      - series: 'ft_probe_rtt_ms{src="srv",dst="h3",class="voice"}'
+        values: '2.3x30'
+      - series: 'ft_probe_jitter_ms{src="srv",dst="h3",class="voice"}'
+        values: '0.1x30'
+      - series: 'ft_probe_loss_ratio{src="srv",dst="h3",class="voice"}'
+        values: '0x30'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: FtVoiceMosLow
+        exp_alerts: []
+
+  # 20 % voice loss (the FEC cliff in run A): MOS ~2.6 -> alert after its 30 s
+  - interval: 5s
+    input_series:
+      - series: 'ft_probe_rtt_ms{src="srv",dst="h3",class="voice"}'
+        values: '2.3x30'
+      - series: 'ft_probe_jitter_ms{src="srv",dst="h3",class="voice"}'
+        values: '0.1x30'
+      - series: 'ft_probe_loss_ratio{src="srv",dst="h3",class="voice"}'
+        values: '0.2x30'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: FtVoiceMosLow
+        exp_alerts:
+          - exp_labels: { severity: warning, src: srv, dst: h3 }
+            exp_annotations: { summary: "Voice quality on srv -> h3: MOS 2.60 (below 'fair')" }
+
+  # link loss over 1 % for 15 s fires FtLinkPacketLoss for that link only
+  - interval: 5s
+    input_series:
+      - series: 'ft_netem_sent_packets_total{node="r1",ifc="eth1",link="L12"}'
+        values: '0+950x30'
+      - series: 'ft_netem_dropped_total{node="r1",ifc="eth1",link="L12"}'
+        values: '0+50x30'
+      - series: 'ft_netem_sent_packets_total{node="r1",ifc="eth2",link="L41"}'
+        values: '0+1000x30'
+      - series: 'ft_netem_dropped_total{node="r1",ifc="eth2",link="L41"}'
+        values: '0+0x30'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: FtLinkPacketLoss
+        exp_alerts:
+          - exp_labels: { severity: critical, link: L12 }
+            exp_annotations: { summary: "Packet loss 5% on link L12" }
+
+  # OSNR margin falling fast: the trend alert fires while the margin is still high
+  - interval: 5s
+    input_series:
+      - series: 'ft_optical_margin_db{link="L12"}'
+        values: '30-0.3x60'          # -0.06 dB/s: at 4 min the margin is still 15.6 dB
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: FtOsnrMarginTrend
+        exp_alerts:
+          - exp_labels: { severity: warning, link: L12 }
+            exp_annotations: { summary: "OSNR margin on L12 falling: cliff in < 10 min at this rate" }

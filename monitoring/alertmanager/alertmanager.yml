@@ -15,7 +15,7 @@ route:
 # a link alert explains the path symptoms it causes: send the cause, not every symptom
 inhibit_rules:
   - source_matchers: [alertname =~ "FtLinkPacketLoss|FtLinkDown"]
-    target_matchers: [alertname =~ "FtPathLoss|FtLatencyRising"]
+    target_matchers: [alertname =~ "FtPathLoss|FtLatencyRising|FtVoiceMosLow"]
 receivers:
   - name: n8n
     webhook_configs:
