@@ -45,3 +45,22 @@ test('the default replay is the recorded golden-path run', async ({ page }) => {
   await expect(page.getByTestId('recorded-banner')).toContainText('recorded run')
   await expect(page.getByTestId('timeline').getByText('Recovery verified')).toBeVisible()
 })
+
+test('what-if: one fibre cut is safe, cutting F12 + F34 splits the network', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'What-if', exact: true }).click()
+  await page.getByTestId('fibre-F12').click()
+  await expect(page.getByTestId('verdict')).toContainText('Safe')
+  await expect(page.getByTestId('verdict')).toContainText('L12, L13')
+  await page.getByTestId('fibre-F34').click()
+  await expect(page.getByTestId('verdict')).toContainText('Not safe')
+  await expect(page.getByTestId('verdict')).toContainText('unreachable')
+})
+
+test('optical cliff: the slider walks from healthy to past the cliff', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Optical cliff', exact: true }).click()
+  await expect(page.getByTestId('cliff-verdict')).toContainText('healthy')
+  await page.getByLabel('Extra span loss').fill('29.5')
+  await expect(page.getByTestId('cliff-verdict')).toContainText(/past the cliff|unusable/)
+})

@@ -157,8 +157,14 @@ export default function NetworkMap({ topology, snapshot, layers, selection, onSe
         const e = cy.getElementById(IP + l.id)
         if (!s) continue
         e.data('colour', HEALTH_COLOUR[s.health])
-        const margin = s.osnr_margin_db !== undefined ? ` · ${s.osnr_margin_db.toFixed(1)} dB` : ''
-        e.data('label', `${l.id}${margin}`)
+        // optical margin when the snapshot has it (replay), otherwise utilisation (what-if)
+        const extra =
+          s.osnr_margin_db !== undefined
+            ? ` · ${s.osnr_margin_db.toFixed(1)} dB`
+            : s.util_pct !== undefined
+              ? ` · ${s.util_pct.toFixed(0)}%`
+              : ''
+        e.data('label', `${l.id}${extra}`)
         e.toggleClass('drained', s.health === 'drained')
       }
       for (const f of topology.fibres) {

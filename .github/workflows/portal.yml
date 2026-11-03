@@ -2,10 +2,10 @@ name: portal
 
 on:
   pull_request:
-    paths: ["portal/**", "contracts/**", ".github/workflows/portal.yml"]
+    paths: ["portal/**", "contracts/**", "sot/**", "netgen/**", "optics/**", "analysis/make_portal_data.py", ".github/workflows/portal.yml"]
   push:
     branches: [main]
-    paths: ["portal/**", "contracts/**", ".github/workflows/portal.yml"]
+    paths: ["portal/**", "contracts/**", "sot/**", "netgen/**", "optics/**", "analysis/make_portal_data.py", ".github/workflows/portal.yml"]
 
 jobs:
   contract-and-portal:
@@ -15,10 +15,12 @@ jobs:
 
       - uses: actions/setup-python@v5
         with: { python-version: "3.13" }
-      - name: Validate data contract fixtures
+      - name: Validate data contract fixtures + recorded replay
         run: |
-          pip install jsonschema
-          python contracts/validate.py replay contracts/examples/*.json
+          pip install -r requirements.txt
+          python contracts/validate.py replay contracts/examples/*.json portal/public/replay/*.json
+      - name: Generate the What-if / Optical data from the current source of truth (same engines as CI)
+        run: python analysis/make_portal_data.py
 
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: npm, cache-dependency-path: portal/package-lock.json }
@@ -46,6 +48,9 @@ jobs:
     environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt && python analysis/make_portal_data.py
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: npm, cache-dependency-path: portal/package-lock.json }
       - working-directory: portal
