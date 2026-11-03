@@ -154,6 +154,10 @@ def build() -> dict:
                                                 {"color": "green", "value": 3}]}),
         ts_panel(10, "Optical: received power per link", "ft_optical_rx_power_dbm", "{{link}}", "suffix: dBm",
                  {"h": 9, "w": 12, "x": 12, "y": 30}),
+        ts_panel(11, "Access: GPON margin to receiver sensitivity per ONT (feeder fault = all move together)",
+                 "ft_pon_margin_db", "{{ont}} {{direction}}", "suffix: dB", {"h": 9, "w": 24, "x": 0, "y": 39},
+                 {"mode": "absolute", "steps": [{"color": "red", "value": None}, {"color": "orange", "value": 0},
+                                                {"color": "green", "value": 3}]}),
     ]
     return {
         "uid": "fibertwin-noc", "title": "FiberTwin NOC", "tags": ["fibertwin"], "timezone": "browser",

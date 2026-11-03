@@ -9,6 +9,6 @@ containerlab deploy -t "$B/ft-core.clab.yml" --reconfigure
 bash "$ROOT/twin/shape-links.sh"
 echo "waiting for routing to converge..."
 for _ in $(seq 1 120); do
-  docker exec clab-ft-core-up1 vtysh -c "show ip route bgp" 2>/dev/null | grep -c "^B>" | grep -q "^2$" && break; sleep 1
+  docker exec clab-ft-core-up1 vtysh -c "show ip route bgp" 2>/dev/null | [ "$(grep -c "^B>")" -ge 2 ] && break; sleep 1
 done
 docker exec clab-ft-core-up1 vtysh -c "show ip route bgp" | grep "^B>" || true

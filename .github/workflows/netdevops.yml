@@ -45,8 +45,16 @@ jobs:
         run: |
           python -m netgen.render
           sudo bash twin/deploy.sh
-      - name: Live tests (adjacencies, BFD, BGP, reachability, forwarding = what-if model)
+      - name: Start the optical agent next to the twin (modelled L0 + access optics)
+        run: |
+          docker build -q -t fibertwin/optical-agent:ci -f optics/Dockerfile .
+          docker run -d --name optical -p 127.0.0.1:8081:8081 -v /var/run/docker.sock:/var/run/docker.sock             -v "$PWD/build:/ft/build:ro" -v "$PWD/sot:/ft/sot:ro" fibertwin/optical-agent:ci
+          for i in $(seq 1 30); do curl -sf localhost:8081/state >/dev/null && break; sleep 1; done
+      - name: Live tests (adjacencies, BFD, BGP, reachability, forwarding = what-if model, access + optics)
         run: pytest -q tests_live
+      - name: Optical agent log
+        if: always()
+        run: docker logs optical 2>&1 | tail -30 || true
       - name: Destroy the twin
         if: always()
         run: sudo bash twin/destroy.sh || true

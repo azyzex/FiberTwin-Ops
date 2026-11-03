@@ -99,7 +99,9 @@ def decide(c: Correlation, open_drain_fibres: set[str], recent_drains: dict[str,
         return Decision("ticket" if c.links else "none", c.evidence)
     if c.fault_class not in ALLOWED_TO_REMEDIATE:
         why = {"F1b": "receiver-side: a config change can't clean a connector",
-               "F2": "fibre cut: OSPF/BFD already rerouted; nothing to change"}[c.fault_class]
+               "F2": "fibre cut: OSPF/BFD already rerouted; nothing to change",
+               "F3": "access degradation: no protection path in a GPON tree; a technician fixes the segment",
+               "F4": "access cut: no protection path; dispatch a technician to the named segment"}[c.fault_class]
         return Decision("ticket", [why])
     if c.fibre in open_drain_fibres:                       # guardrail: one change per element at a time
         return Decision("none", [f"a drain of {c.fibre} is already in progress"])
@@ -148,3 +150,42 @@ def drain_sot_text(sot_text: str, links: list[str], cost: int, note: str) -> str
             line = re.sub(r"ospf_cost:\s*\d+", f"ospf_cost: {cost}", line)
         out.append(line)
     return "".join(out)
+
+
+# ---------------------------------------------------------------- access (Slice 1f)
+PON_DROP_DB = 1.5          # an ONT's margin this far below design = degrading
+FEEDER_SPREAD_DB = 1.0     # ONTs whose shift agrees within this = one common cause upstream (the feeder)
+LOS_MARGIN_DB = -5.0       # below this the receiver has lost the signal (ONT down)
+
+
+def correlate_access(sot: dict, pon: dict[str, dict]) -> Correlation:
+    """pon[ont] = {"shift_db": design - measured margin (worst direction), "margin_db": measured (worst direction)}.
+
+    F4 cut:          ONTs lost the signal. All ONTs of a splitter -> the feeder (or OLT); some -> their drops.
+    F3 degradation:  every ONT of a splitter shifted by about the same dB -> the shared feeder;
+                     otherwise the shifted ONTs' own drops.
+    """
+    acc = sot.get("access")
+    if not acc:
+        return Correlation(None, None, [], ["no access network"])
+    for sid in acc["splitters"]:
+        onts = [o for o, n in acc["onts"].items() if n["splitter"] == sid]
+        los = [o for o in onts if pon.get(o, {}).get("margin_db", 99) < LOS_MARGIN_DB]
+        deg = [o for o in onts if pon.get(o, {}).get("shift_db", 0) > PON_DROP_DB and o not in los]
+        if los and set(los) == set(onts):
+            return Correlation("F4", f"feeder:{sid}", onts, [f"all {len(onts)} ONTs behind {sid} lost the signal: "
+                                                              f"feeder (or OLT port) cut"])
+        if los:
+            return Correlation("F4", f"drop:{los[0]}" if len(los) == 1 else ",".join(f"drop:{o}" for o in los), los,
+                               [f"{', '.join(los)} lost the signal while the other ONTs on {sid} are fine: drop cut"])
+        if deg and set(deg) == set(onts):
+            shifts = [pon[o]["shift_db"] for o in onts]
+            if max(shifts) - min(shifts) <= FEEDER_SPREAD_DB:
+                return Correlation("F3", f"feeder:{sid}", onts, [
+                    f"all {len(onts)} ONTs on {sid} lost {min(shifts):.1f}-{max(shifts):.1f} dB together: "
+                    f"one shared cause, the feeder ({sum(shifts) / len(shifts):.1f} dB extra loss)"])
+        if deg:
+            return Correlation("F3", ",".join(f"drop:{o}" for o in deg), deg, [
+                f"{', '.join(f'{o} -{pon[o]['shift_db']:.1f} dB' for o in deg)} while the other ONTs on {sid} are "
+                f"unchanged: the cause is on the drop{'s' if len(deg) > 1 else ''}"])
+    return Correlation(None, None, [], ["access budgets normal"])

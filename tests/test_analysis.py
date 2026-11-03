@@ -104,3 +104,46 @@ def test_drained_sot_passes_yamllint(tmp_path):
     conf = YamlLintConfig(file=str(root / ".yamllint.yml"))
     problems = [p for p in linter.run(new, conf) if p.level == "error"]
     assert not problems, problems
+
+
+# ---------------------------------------------------------------- access
+ACC = model.load()          # the live SoT has the access tree
+
+
+def pon(**shifts):
+    """shift (dB below design) per ONT; margin derived from a design margin of 8 dB."""
+    out = {o: {"shift_db": 0.0, "margin_db": 8.0} for o in ACC["access"]["onts"]}
+    for o, sh in shifts.items():
+        out[o] = {"shift_db": sh, "margin_db": 8.0 - sh}
+    return out
+
+
+def test_feeder_degradation_all_onts_same_shift():
+    c = logic.correlate_access(ACC, pon(ont1=5.1, ont2=5.0, ont3=4.8, ont4=5.2))
+    assert (c.fault_class, c.fibre) == ("F3", "feeder:spl1") and len(c.links) == 4
+    assert logic.decide(c, set(), {}, 0).action == "ticket"
+
+
+def test_drop_degradation_one_ont():
+    c = logic.correlate_access(ACC, pon(ont3=4.0))
+    assert (c.fault_class, c.fibre, c.links) == ("F3", "drop:ont3", ["ont3"])
+
+
+def test_all_onts_shifted_but_unequally_is_drops_not_feeder():
+    c = logic.correlate_access(ACC, pon(ont1=2.0, ont2=6.0, ont3=2.1, ont4=2.2))
+    assert c.fault_class == "F3" and c.fibre.startswith("drop:")
+
+
+def test_feeder_cut_and_drop_cut():
+    assert logic.correlate_access(ACC, pon(ont1=20, ont2=20, ont3=20, ont4=20)).fibre == "feeder:spl1"
+    c = logic.correlate_access(ACC, pon(ont2=20))
+    assert (c.fault_class, c.fibre) == ("F4", "drop:ont2")
+
+
+def test_access_never_changes_the_network():
+    for cl in ("F3", "F4"):
+        assert logic.decide(logic.Correlation(cl, "drop:ont1", ["ont1"]), set(), {}, 0).action == "ticket"
+
+
+def test_healthy_access_no_incident():
+    assert logic.correlate_access(ACC, pon()).fault_class is None

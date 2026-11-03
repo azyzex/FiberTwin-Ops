@@ -1105,6 +1105,72 @@
      "mode": "multi"
     }
    }
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "Access: GPON margin to receiver sensitivity per ONT (feeder fault = all move together)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prom"
+   },
+   "gridPos": {
+    "h": 9,
+    "w": 24,
+    "x": 0,
+    "y": 39
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prom"
+     },
+     "expr": "ft_pon_margin_db",
+     "legendFormat": "{{ont}} {{direction}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "suffix: dB",
+     "custom": {
+      "lineWidth": 2,
+      "fillOpacity": 8,
+      "showPoints": "never",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      }
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 0
+       },
+       {
+        "color": "green",
+        "value": 3
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
   }
  ],
  "annotations": {

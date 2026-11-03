@@ -387,9 +387,71 @@
     "specifyBody": "json",
     "jsonBody": "={{ JSON.stringify({text: ':hourglass: ' + $('Analyse alerts').first().json.incident + ' still waits for approval: ' + 'the fibre keeps degrading. Review the drain PR.'}) }}"
    }
+  },
+  {
+   "id": "0886a767-8a9b-5ff7-9a32-e5b62f600d00",
+   "name": "Technician: repaired form",
+   "type": "n8n-nodes-base.formTrigger",
+   "typeVersion": 2.2,
+   "position": [
+    0,
+    700
+   ],
+   "parameters": {
+    "formTitle": "FiberTwin: field repair done",
+    "formDescription": "Report a repair. The incident closes only if the optical measurements are back to design.",
+    "formFields": {
+     "values": [
+      {
+       "fieldLabel": "Incident ID",
+       "requiredField": true
+      },
+      {
+       "fieldLabel": "What was done",
+       "fieldType": "textarea"
+      }
+     ]
+    },
+    "responseMode": "onReceived",
+    "options": {
+     "path": "fibertwin-repaired"
+    }
+   },
+   "webhookId": "535d4f23-dfc3-5179-9304-b4280c0a3dab"
+  },
+  {
+   "id": "d16a1919-9ec9-5dc2-a746-7f43fcb11830",
+   "name": "Report repair",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    700
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/incidents/{{ $json['Incident ID'] }}/repaired",
+    "options": {
+     "timeout": 30000
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({note: $json['What was done'] || ''}) }}"
+   }
   }
  ],
  "connections": {
+  "Technician: repaired form": {
+   "main": [
+    [
+     {
+      "node": "Report repair",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
   "Alertmanager webhook": {
    "main": [
     [

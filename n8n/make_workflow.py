@@ -79,6 +79,19 @@ http("Remind approver", "POST", "/notify", 2420, 420,
      body="={{ JSON.stringify({text: ':hourglass: ' + $('Analyse alerts').first().json.incident + ' still waits for approval: ' + "
           "'the fibre keeps degrading. Review the drain PR.'}) }}")
 
+# second trigger: the technician's "repaired" form (Slice 1f). The API closes the incident only if the
+# measurements agree, and closes the GitHub work order.
+node("Technician: repaired form", "n8n-nodes-base.formTrigger", 2.2, 0, 700, {
+    "formTitle": "FiberTwin: field repair done",
+    "formDescription": "Report a repair. The incident closes only if the optical measurements are back to design.",
+    "formFields": {"values": [{"fieldLabel": "Incident ID", "requiredField": True},
+                              {"fieldLabel": "What was done", "fieldType": "textarea"}]},
+    "responseMode": "onReceived", "options": {"path": "fibertwin-repaired"}},
+    webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "fibertwin-repaired")))
+http("Report repair", "POST", "/incidents/{{ $json['Incident ID'] }}/repaired", 220, 700,
+     body="={{ JSON.stringify({note: $json['What was done'] || ''}) }}")
+link("Technician: repaired form", "Report repair")
+
 link("Alertmanager webhook", "Analyse alerts")
 link("Analyse alerts", "Drain?")
 link("Drain?", "What-if", 0); link("Drain?", "Ticket?", 1)

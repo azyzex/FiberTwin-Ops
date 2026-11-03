@@ -7,7 +7,7 @@ route:
   routes:
     # optical + link-down alerts also trigger the n8n response playbook (and still go to Slack)
     - receiver: n8n
-      matchers: [alertname =~ "FtOsnrMarginTrend|FtOsnrMarginLow|FtLinkDown"]
+      matchers: [alertname =~ "FtOsnrMarginTrend|FtOsnrMarginLow|FtLinkDown|FtPonMarginLow|FtPonMarginTrend|FtOntLos"]
       group_by: [alertname]
       group_wait: 2s
       continue: true
