@@ -60,8 +60,11 @@ def main() -> int:
     out += ["| file | status |", "|---|---|"] + [f"| {r.File_Name} | {r.Status} |" for r in ps.itertuples()]
     issues = bf.q.initIssues().answer().frame()
     out += ["", f"**Initialisation issues: {len(issues)}**"]
-    for r in issues.head(15).itertuples():
-        out.append(f"- {r.Type}: {str(r.Details)[:160]}")
+    unrecognised = []
+    for r in issues.itertuples():
+        line = str(getattr(r, "Line_Text", "") or "").strip()
+        unrecognised.append(line)
+        out.append(f"- {r.Type} on {getattr(r, 'Nodes', '')}: `{line}` ({str(r.Details)[:80]})")
     exp_ospf = 2 * len(sot["links"])                      # one session per direction
     try:
         ospf = bf.q.ospfSessionCompatibility().answer().frame()
@@ -80,8 +83,16 @@ def main() -> int:
     out += ["", "| check | Batfish | expected (SoT) |", "|---|---|---|",
             f"| OSPF sessions established | {est} | {exp_ospf} |",
             f"| iBGP sessions established | {bgp_est} | {exp_bgp} |"]
-    passed = all(s == "PASSED" for s in ps["Status"]) and est == exp_ospf
-    out += ["", f"**Verdict: {'Batfish understands these FRR configs' if passed else 'Batfish does NOT fully model these FRR configs (see above)'}**"]
+    routing_ok = est == exp_ospf and bgp_est == exp_bgp
+    only_bfd = all("bfd" in l.lower() for l in unrecognised if l)
+    if all(s == "PASSED" for s in ps["Status"]) and routing_ok:
+        verdict = "Batfish fully understands these FRR configs"
+    elif routing_ok and only_bfd:
+        verdict = ("Batfish models OSPF and BGP correctly; it only ignores the BFD lines. "
+                   "Usable for routing checks (BFD stays covered by the live twin)")
+    else:
+        verdict = "Batfish does NOT model these FRR configs well enough (see above)"
+    out += ["", f"**Verdict: {verdict}**"]
     text = "\n".join(out) + "\n"
     print(text)
     if a.summary:
