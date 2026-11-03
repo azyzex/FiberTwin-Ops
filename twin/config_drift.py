@@ -25,9 +25,33 @@ def nodes() -> list[str]:
     return sorted(p.name for p in cfg.iterdir() if (p / "frr.conf").exists())
 
 
+CONTEXTS = ("interface ", "router ", "bfd", "profile ", "address-family ", "vrf ", "route-map ", "line ")
+
+
+def leaves(lines: list[str]) -> list[str]:
+    """frr-reload lists context lines, the changed line, then 'exit's. Turn that into full paths:
+    ["interface eth1", "ip ospf cost 77", "exit"] -> ["interface eth1 > ip ospf cost 77"]."""
+    out, stack, pending = [], [], None
+    for l in lines:
+        if l == "exit":
+            if pending is not None:          # a context with nothing inside: the context line itself changed
+                out.append(" > ".join(stack))
+                pending = None
+            if stack:
+                stack.pop()
+            continue
+        if l.startswith(CONTEXTS):
+            stack.append(l)
+            pending = True
+            continue
+        pending = None
+        out.append(" > ".join([*stack, l]))
+    return out
+
+
 def parse_reload_test(out: str) -> dict[str, list[str]]:
     """frr-reload.py --test prints a 'Lines To Delete' and a 'Lines To Add' section."""
-    res: dict[str, list[str]] = {"delete": [], "add": []}
+    raw: dict[str, list[str]] = {"delete": [], "add": []}
     section = None
     for line in out.splitlines():
         s = line.strip()
@@ -40,14 +64,35 @@ def parse_reload_test(out: str) -> dict[str, list[str]]:
         if not s or set(s) <= {"="}:
             continue
         if section:
-            res[section].append(s)
-    return res
+            raw[section].append(s)
+    return {k: leaves(v) for k, v in raw.items()}
+
+
+# FRR display normalisation, measured on FRR 10.2 (Slice 2): the same intent written two ways, or a default
+# value FRR doesn't print. These are NOT human changes. Anything else is reported as drift.
+BFD_DEFAULTS = {"detect-multiplier 3", "receive-interval 300", "transmit-interval 300"}
+
+
+def normalise(d: dict[str, list[str]], intended: str) -> dict[str, list[str]]:
+    delete = [x for x in d["delete"] if x != "ipv6 forwarding"]          # kernel default shown by FRR
+    add = list(d["add"])
+    # BFD profile values equal to FRR's defaults are not printed in the running config
+    add = [x for x in add if not (x.startswith("bfd > profile ") and x.split(" > ")[-1] in BFD_DEFAULTS)]
+    # "neighbor X activate" is implicit when the router keeps "bgp default ipv4-unicast" (the default)
+    if "no bgp default ipv4-unicast" not in intended:
+        add = [x for x in add if not (x.startswith("router bgp ") and x.endswith(" activate"))]
+    # FRR 10 stores "router ospf / passive-interface lo" as interface-level config on lo
+    if "router ospf > passive-interface lo" in add and "interface lo > no ip ospf passive" in delete:
+        add.remove("router ospf > passive-interface lo")
+        delete.remove("interface lo > no ip ospf passive")
+    return {"delete": delete, "add": add}
 
 
 def check(node: str) -> dict[str, list[str]]:
     r = subprocess.run(["docker", "exec", PREFIX + node, "/usr/lib/frr/frr-reload.py", "--test", "/etc/frr/frr.conf"],
                        capture_output=True, text=True)
-    return parse_reload_test(r.stdout)
+    intended = (ROOT / "build" / "ft-core" / "configs" / node / "frr.conf").read_text()
+    return normalise(parse_reload_test(r.stdout), intended)
 
 
 def reapply(node: str) -> bool:
