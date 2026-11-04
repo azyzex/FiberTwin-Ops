@@ -13,6 +13,14 @@ SOT = model.load(SOT_1A)
 DESIGN = {"L12": 24.4, "L13": 23.3, "L23": 29.2, "L34": 26.4, "L41": 22.0}
 
 
+def live_sot_text_undrained() -> str:
+    """The live SoT as it is before any drain. A drain PR changes sot/network.yaml itself, so tests that edit it
+    must start from the undrained form (a real drain PR, #35, was rejected by CI because they did not)."""
+    text = (Path(__file__).resolve().parents[1] / "sot" / "network.yaml").read_text()
+    links = list(yaml.safe_load(text)["links"])
+    return logic.drain_sot_text(text, links, 10, "")
+
+
 def tel(**margins):
     """telemetry with design values, overriding margins / rx power per link: L12=(margin, rx)."""
     t = {l: {"margin": m, "design_margin": m, "rx_power": -1.0, "design_rx_power": -1.0} for l, m in DESIGN.items()}
@@ -84,7 +92,7 @@ def test_verify_recovered_and_not():
 
 
 def test_drain_edit_keeps_the_file_and_changes_only_the_costs():
-    text = (Path(__file__).resolve().parents[1] / "sot" / "network.yaml").read_text()
+    text = live_sot_text_undrained()
     new = logic.drain_sot_text(text, ["L12", "L13"], 1000, "drained: F12 degrading (INC-1)")
     old_y, new_y = yaml.safe_load(text), yaml.safe_load(new)
     assert new_y["links"]["L12"]["ospf_cost"] == 1000 and new_y["links"]["L13"]["ospf_cost"] == 1000
@@ -101,7 +109,7 @@ def test_drained_sot_passes_yamllint(tmp_path):
     from yamllint import linter
     from yamllint.config import YamlLintConfig
     root = Path(__file__).resolve().parents[1]
-    new = logic.drain_sot_text((root / "sot" / "network.yaml").read_text(), ["L12", "L13"], 1000,
+    new = logic.drain_sot_text(live_sot_text_undrained(), ["L12", "L13"], 1000,
                                "drained: F12 degrading (INC-20261102-234715-F12)")
     conf = YamlLintConfig(file=str(root / ".yamllint.yml"))
     problems = [p for p in linter.run(new, conf) if p.level == "error"]
@@ -114,7 +122,7 @@ ACC = model.load()          # the live SoT has the access tree
 def sot_text_without_blocks() -> str:
     """The live SoT with an empty blocklist: these tests check the logic, not today's network state
     (a legitimate block PR changes the live blocklist and must not fail them; it did, PR #26)."""
-    text = (Path(__file__).resolve().parents[1] / "sot" / "network.yaml").read_text()
+    text = live_sot_text_undrained()
     return re.sub(r"  blocklist:\n(?:    - .*\n)*", "  blocklist: []\n", text)
 
 
