@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OLT=${OLT:-clab-ft-core-olt1}
 LOGDIR=${FT_SURICATA_LOG:-/opt/fibertwin/suricata}
 docker inspect "$OLT" >/dev/null 2>&1 || { echo "no $OLT: access network not deployed"; exit 0; }
-mkdir -p "$LOGDIR"; chmod 755 "$LOGDIR"
+mkdir -p "$LOGDIR"; chmod 755 "$LOGDIR" 2>/dev/null || true   # the deployer (not root) may not own it: fine if it exists
 docker rm -f ft-suricata >/dev/null 2>&1 || true
 docker run -d --name ft-suricata --network "container:$OLT" \
   --cap-add NET_ADMIN --cap-add NET_RAW --cap-add SYS_NICE --memory 300m \
