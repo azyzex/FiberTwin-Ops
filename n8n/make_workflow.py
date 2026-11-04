@@ -92,6 +92,13 @@ http("Report repair", "POST", "/incidents/{{ $json['Incident ID'] }}/repaired", 
      body="={{ JSON.stringify({note: $json['What was done'] || ''}) }}")
 link("Technician: repaired form", "Report repair")
 
+# third trigger: every minute, ask the API to move open incidents forward. The API keeps the state (SQLite),
+# so an incident survives an n8n restart; the Wait/Status loop above is the fast path, this is the safety net.
+node("Every minute", "n8n-nodes-base.scheduleTrigger", 1.2, 0, 1000,
+     {"rule": {"interval": [{"field": "minutes", "minutesInterval": 1}]}})
+http("Sweep open incidents", "POST", "/sweep", 220, 1000)
+link("Every minute", "Sweep open incidents")
+
 link("Alertmanager webhook", "Analyse alerts")
 link("Analyse alerts", "Drain or block?")
 link("Drain or block?", "What-if", 0); link("Drain or block?", "Ticket?", 1)

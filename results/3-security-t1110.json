@@ -1,0 +1,91 @@
+{
+ "date": "2026-11-04T15:16:03.509139+00:00",
+ "runs": {
+  "T1110": {
+   "technique": "T1110",
+   "src": "198.51.100.66",
+   "incident": "INC-20261104-011933-block:198.51.100.66",
+   "pr": "https://github.com/azyzex/FiberTwin-Ops/pull/26",
+   "note": "resumed after CI rejected the first run (tests coupled to the live blocklist, fixed in PR #27)",
+   "ci_green_s": 1.2,
+   "merged_s": 7.1,
+   "deployed_s": 65.3,
+   "merge_sha": "c2fd157626577f38ab22f344227a3e150e520294",
+   "reachable_after_block": "blocked",
+   "nft_after": "ip saddr @blocked counter packets 20 bytes 1200 drop\n\t\tip daddr @blocked counter packets 0 bytes 0 drop",
+   "events": [
+    {
+     "ts": "2026-11-04T01:19:33.914Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "detected",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "external source 198.51.100.66: ATT&CK T1110 against ont2"
+    },
+    {
+     "ts": "2026-11-04T01:19:33.928Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "located",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "F6 on block:198.51.100.66: external source 198.51.100.66: ATT&CK T1110 against ont2"
+    },
+    {
+     "ts": "2026-11-04T01:19:33.998Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "what_if_passed",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "blocking 198.51.100.66 at the OLT touches no customer service"
+    },
+    {
+     "ts": "2026-11-04T01:19:41.374Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "pr_opened",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "PR #26: block 198.51.100.66 at the OLT",
+     "url": "https://github.com/azyzex/FiberTwin-Ops/pull/26"
+    },
+    {
+     "ts": "2026-11-04T15:20:06.037Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "ci_passed",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "required CI checks passed: validate + temporary twin with live tests"
+    },
+    {
+     "ts": "2026-11-04T15:20:06.052Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "approved",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "merged by azyzex (human approval)",
+     "url": "https://github.com/azyzex/FiberTwin-Ops/pull/26"
+    },
+    {
+     "ts": "2026-11-04T15:20:06.760Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "deployed",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "pull-based deployer applied c2fd157 (hitless frr-reload)"
+    },
+    {
+     "ts": "2026-11-04T15:20:06.841Z",
+     "incident_id": "INC-20261104-011933-block:198.51.100.66",
+     "type": "verified",
+     "fault_class": "F6",
+     "element": "block:198.51.100.66",
+     "summary": "OLT dropped 32 packets from/to 198.51.100.66 in the last 2 min"
+    }
+   ]
+  },
+  "T1046": {
+   "technique": "T1046",
+   "src": "100.64.10.14",
+   "reachable_before": "reachable"
+  }
+ }
+}

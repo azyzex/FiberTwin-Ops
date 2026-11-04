@@ -1,0 +1,38 @@
+# GitLab CI (mirror of the GitHub repo). Plan Slice 2: the same repo also runs on GitLab, with the light jobs;
+# the heavy temporary twin (containerlab, live tests) stays on GitHub Actions (unlimited minutes for public repos,
+# bigger runners). Same model as GitHub Actions: pipeline -> stages -> jobs -> runners.
+stages: [validate, test]
+
+default:
+  image: python:3.13-slim
+  before_script:
+    - pip install -q -r requirements.txt
+
+lint-sot:
+  stage: validate
+  script:
+    - yamllint sot/
+    - python -m netgen.render
+  artifacts:
+    paths: [build/ft-core/]
+    expire_in: 1 week
+
+unit-tests:
+  stage: test
+  script:
+    - pytest -q tests monitoring/exporter/test_parsing.py --junitxml=report.xml
+  artifacts:
+    reports: { junit: report.xml }
+
+bad-changes:
+  stage: test
+  script:
+    - python tests/bad_changes.py
+
+prometheus-rules:
+  stage: test
+  image: { name: prom/prometheus:v3.5.0, entrypoint: [""] }
+  before_script: []
+  script:
+    - promtool check rules monitoring/prometheus/rules/fibertwin.yml
+    - cd monitoring/prometheus/tests && promtool test rules rules_test.yml
