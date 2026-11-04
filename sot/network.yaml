@@ -96,5 +96,4 @@ security:
   pon_isolation: true      # like a real GPON: ONTs can't talk to each other directly, all traffic goes via the OLT
   # Blocked sources, enforced with nftables on the OLT (forwarded traffic, both directions).
   # The response playbook (F6) proposes additions here in a pull request; a human approves.
-  blocklist:
-    - { ip: 198.51.100.66/32, reason: "T1110 against ont2 (INC-20261104-011933-block:198.51.100.66)" }
+  blocklist: []
