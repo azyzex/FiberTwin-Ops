@@ -169,3 +169,16 @@ def test_never_block_the_internet_server(api, monkeypatch):
         {"alertname": "FtSshBruteForceOnACpe", "src_ip": "203.0.113.10", "attack_technique": "T1110", "container": "ont2"}])
     r = client.post("/alerts").json()
     assert r["action"] == "ticket"
+
+
+def test_container_image_ships_every_module_the_api_imports():
+    """The analysis container copies files one by one: an import that works in the repo can fail in the image
+    (it did: netgen.model was missing and the F6 guardrail check crashed with HTTP 500 on the laptop)."""
+    import ast
+    root = Path(__file__).resolve().parents[1]
+    docker = (root / "analysis" / "Dockerfile").read_text()
+    for src in ("analysis/app.py", "analysis/logic.py"):
+        for node in ast.walk(ast.parse((root / src).read_text())):
+            if isinstance(node, ast.ImportFrom) and node.module in ("netgen", "analysis"):
+                for alias in node.names:
+                    assert f"{node.module}/{alias.name}.py" in docker, f"{src} imports {node.module}.{alias.name}, not in the image"

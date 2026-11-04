@@ -133,7 +133,7 @@ def clab_topology(sot: dict) -> str:
         ssh = sec["cpe_ssh"]
         if ssh and n["name"] in ssh["onts"]:
             ex += [f"adduser -D {ssh['user']}", f"sh -c 'echo {ssh['user']}:{ssh['password']} | chpasswd'", "ssh-keygen -A",
-                   "sh -c '/usr/sbin/sshd -D -e -o PasswordAuthentication=yes -o MaxStartups=100 > /proc/1/fd/1 2>&1 &'"]
+                   "sh -c '/usr/sbin/sshd -D -e -o PasswordAuthentication=yes -o MaxStartups=100 -o PerSourcePenalties=no > /proc/1/fd/1 2>&1 &'"]
         lines += [f"    {n['name']}:", "      kind: linux", f"      image: {meta['host_image']}",
                   "      labels: { graph-group: access }", f"      exec: {json.dumps(ex)}"]
     if sec["attacker"]:
