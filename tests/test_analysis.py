@@ -1,6 +1,8 @@
 """Analysis API decision logic: correlation, guardrails, verification, SoT edit."""
 from pathlib import Path
 
+import re
+
 import yaml
 
 from analysis import logic
@@ -109,6 +111,13 @@ def test_drained_sot_passes_yamllint(tmp_path):
 # ---------------------------------------------------------------- access
 ACC = model.load()          # the live SoT has the access tree
 
+def sot_text_without_blocks() -> str:
+    """The live SoT with an empty blocklist: these tests check the logic, not today's network state
+    (a legitimate block PR changes the live blocklist and must not fail them; it did, PR #26)."""
+    text = (Path(__file__).resolve().parents[1] / "sot" / "network.yaml").read_text()
+    return re.sub(r"  blocklist:\n(?:    - .*\n)*", "  blocklist: []\n", text)
+
+
 
 def pon(**shifts):
     """shift (dB below design) per ONT; margin derived from a design margin of 8 dB."""
@@ -172,9 +181,7 @@ def test_never_block_the_service_customers_use():
 
 
 def test_block_edit_is_valid_sot():
-    root = Path(__file__).resolve().parents[1]
-    text = (root / "sot" / "network.yaml").read_text()
-    new = logic.block_sot_text(text, "198.51.100.66", "T1110 SSH brute force on ont2 (INC-1)")
+    new = logic.block_sot_text(sot_text_without_blocks(), "198.51.100.66", "T1110 SSH brute force on ont2 (INC-1)")
     sec = yaml.safe_load(new)["security"]["blocklist"]
     assert sec == [{"ip": "198.51.100.66/32", "reason": "T1110 SSH brute force on ont2 (INC-1)"}]
     new2 = logic.block_sot_text(new, "100.64.10.14", "T1046 scan")
@@ -187,6 +194,6 @@ def test_blocking_infrastructure_is_refused_by_validation():
     import pytest
     from netgen import model as m
     root = Path(__file__).resolve().parents[1]
-    bad = yaml.safe_load(logic.block_sot_text((root / "sot" / "network.yaml").read_text(), "10.0.0.1", "oops"))
+    bad = yaml.safe_load(logic.block_sot_text(sot_text_without_blocks(), "10.0.0.1", "oops"))
     with pytest.raises(m.SotError, match="infrastructure"):
         m.validate(bad)
