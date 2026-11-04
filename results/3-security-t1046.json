@@ -1,0 +1,82 @@
+{
+ "technique": "T1046",
+ "src": "100.64.10.14",
+ "incident": "INC-20261104-153453-block:100.64.10.14",
+ "pr": "https://github.com/azyzex/FiberTwin-Ops/pull/29",
+ "note": "first CI run rejected the quarantine (live tests expected every ONT reachable); tests now read the blocklist (PR #30), the same PR was re-tested and merged",
+ "reachable_before": "reachable",
+ "ci_green_s": 1.1,
+ "merged_s": 6.8,
+ "deployed_s": 69.2,
+ "merge_sha": "219b01720395ed6efee193b3b65bb8fe6fa58053",
+ "reachable_after_block": "blocked",
+ "nft_after": "ip saddr @blocked counter packets 433 bytes 19181 drop\n\t\tip daddr @blocked counter packets 3 bytes 252 drop",
+ "events": [
+  {
+   "ts": "2026-11-04T15:34:53.888Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "detected",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "rogue ONT ont4 (100.64.10.14): ATT&CK T1046"
+  },
+  {
+   "ts": "2026-11-04T15:34:53.907Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "located",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "F6 on block:100.64.10.14: rogue ONT ont4 (100.64.10.14): ATT&CK T1046"
+  },
+  {
+   "ts": "2026-11-04T15:34:54.017Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "what_if_passed",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "blocking 100.64.10.14 at the OLT touches no customer service"
+  },
+  {
+   "ts": "2026-11-04T15:35:20.537Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "pr_opened",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "PR #29: block 100.64.10.14 at the OLT",
+   "url": "https://github.com/azyzex/FiberTwin-Ops/pull/29"
+  },
+  {
+   "ts": "2026-11-04T16:36:03.853Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "ci_passed",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "required CI checks passed: validate + temporary twin with live tests"
+  },
+  {
+   "ts": "2026-11-04T16:36:03.873Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "approved",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "merged by azyzex (human approval)",
+   "url": "https://github.com/azyzex/FiberTwin-Ops/pull/29"
+  },
+  {
+   "ts": "2026-11-04T16:37:02.640Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "deployed",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "pull-based deployer applied 219b017 (nftables reload on the OLT)"
+  },
+  {
+   "ts": "2026-11-04T16:38:02.777Z",
+   "incident_id": "INC-20261104-153453-block:100.64.10.14",
+   "type": "verified",
+   "fault_class": "F6",
+   "element": "block:100.64.10.14",
+   "summary": "OLT dropped 840 packets from/to 100.64.10.14 in the last 2 min"
+  }
+ ]
+}
