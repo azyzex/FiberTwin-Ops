@@ -42,6 +42,11 @@ drifted() {
     done
   done
 }
+# the Suricata sidecar shares the OLT's network namespace: when the OLT is recreated it is left in a dead
+# namespace and its restart policy can't help. It is part of the intended state, so reconcile it too.
+if docker inspect clab-ft-core-olt1 >/dev/null 2>&1 && [ "$(docker inspect -f '{{.State.Running}}' ft-suricata 2>/dev/null)" != "true" ]; then
+  bash twin/security-sidecar.sh >>"$LOG" 2>&1 && log "DRIFT security sidecar was down -> restarted (Suricata on the OLT)"
+fi
 if [ "$TARGET" = "$CURRENT" ]; then
   missing=$(drifted)
   if [ -z "$missing" ]; then
