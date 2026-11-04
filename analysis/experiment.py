@@ -73,7 +73,8 @@ def merge_when_green(pr: str, t0: float, marks: dict) -> None:
     num = pr.rstrip("/").split("/")[-1]
     while True:
         out = gh("pr", "checks", num)
-        if out and all("\tpass\t" in l for l in out.strip().splitlines()) and len(out.strip().splitlines()) >= 2:
+        lines = [l for l in out.strip().splitlines() if "\tskipping\t" not in l]   # e.g. deploy-pages on PRs
+        if lines and all("\tpass\t" in l for l in lines) and len(lines) >= 2:
             break
         if "\tfail\t" in out:
             raise RuntimeError(f"CI failed on {pr}")

@@ -438,6 +438,43 @@
     "specifyBody": "json",
     "jsonBody": "={{ JSON.stringify({note: $json['What was done'] || ''}) }}"
    }
+  },
+  {
+   "id": "677c8776-f7fc-5dad-bafd-56e2358e1613",
+   "name": "Every minute",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    1000
+   ],
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 1
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "4d3d8614-e434-53d9-b3d0-c52c6eef5482",
+   "name": "Sweep open incidents",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    1000
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=http://analysis:8000/sweep",
+    "options": {
+     "timeout": 30000
+    }
+   }
   }
  ],
  "connections": {
@@ -446,6 +483,17 @@
     [
      {
       "node": "Report repair",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Every minute": {
+   "main": [
+    [
+     {
+      "node": "Sweep open incidents",
       "type": "main",
       "index": 0
      }

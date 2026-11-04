@@ -35,7 +35,7 @@ A hard cut is different: OSPF + BFD reroute in **0.74–0.85 s** by themselves, 
 ```
 
 ```
- sot/network.yaml ─► PR ─► CI: validate · render (Nornir + Jinja2) · 97 unit tests · capacity + SRLG what-if · Batfish
+ sot/network.yaml ─► PR ─► CI: validate · render (Nornir + Jinja2) · 110 unit tests · capacity + SRLG what-if · Batfish
      ▲                          └► temporary twin on the runner ─► 13 live tests ─► ✅ / ❌
      │                 merge (= human approval) ─► main (protected) ◄── pull-based deployer on the laptop (30 s)
      │                                                                    └► hitless frr-reload ─► live tests
@@ -58,7 +58,8 @@ A hard cut is different: OSPF + BFD reroute in **0.74–0.85 s** by themselves, 
 | [1e](analysis) | incident response | 0 vs 1,567 packets lost (above) | ✅ |
 | 1f | access network | degrading drop connector → **work order naming the drop of ONT3 at 127 s, 2 min before the ONT went dark**; other ONTs untouched; an early "repaired" report refused, the real one closed incident + issue ([data](results/1f-access-e2e.json)) | ✅ |
 | 2 | NetDevOps depth | [15/15 bad changes](results/bad-changes.md) caught statically · Batfish models OSPF 10/10, iBGP 12/12 · out-of-band edits detected and reverted | 🟨 |
-| 4 | QoS study | voice MOS (ITU-T G.107 E-model) per path | 🟨 |
+| [3](security) | security (SecOps on the same pipeline) | SSH brute force (ATT&CK T1110) on a customer ONT: Sigma rule → Loki → incident → **block PR** ([#26](https://github.com/azyzex/FiberTwin-Ops/pull/26)) → same CI → deployer reloads nftables on the OLT **65 s after the merge** → attacker blocked, verified ("OLT dropped 32 packets"), then unblocked with a revert PR ([data](results/3-security-t1110.json)) | ✅ |
+| [4](results/4-detection-study.md) | detection study + QoS | trend rule warns 2.6–12 min before the cliff but misses 0.1 dB/min drifts, a 3 dB threshold catches those (31.6 min): the lab runs both, never misses · on a tight 4 dB link a fixed threshold gives 72 false alarms/day, Theil–Sen 2 · voice MOS (ITU-T G.107 E-model) per path | ✅ |
 | [Portal](portal) | React web app | replay, what-if simulator, optical cliff explorer, 22 browser tests | ✅ |
 
 | NOC dashboard during an injected fault | Gray failure caught before any loss |
@@ -72,7 +73,7 @@ Requirements: Docker Engine, containerlab, Python 3.13 (Linux / WSL 2; ~1 GB RAM
 ```bash
 pip install -r requirements.txt
 python -m netgen.render && sudo bash twin/deploy.sh          # the twin, from the source of truth
-pytest -q tests && sudo pytest -q tests_live                 # 97 unit + 13 live tests
+pytest -q tests && sudo pytest -q tests_live                 # 110 unit + 13 live tests
 sudo FT_ROOT=$PWD bash monitoring/up.sh                      # Prometheus, Grafana :3000, optical agent, analysis API, n8n
 ```
 
@@ -80,6 +81,7 @@ sudo FT_ROOT=$PWD bash monitoring/up.sh                      # Prometheus, Grafa
 - The optics are first-order models (ASE-limited NRZ-OOK, no nonlinearities, dispersion or PMD; GPON TDMA/DBA not modelled), and the data come from my own models: validation on real equipment is future work.
 - Degradations are time-compressed (dB per minute) so a demo fits in minutes; real fibres degrade over hours or days, and the trend thresholds must be tuned for that (Slice 4).
 - One loss rate per link (size-independent); "approval" in the experiment was played immediately once CI was green.
+- Security: the attacks are lab scripts (hydra, nmap) against deliberately weak lab credentials; OpenSSH's own per-source penalties were turned off on the lab CPEs so the detection chain is what stops the attack (in production keep them on: defence in depth).
 
 ## Folders
 | | |
@@ -104,5 +106,9 @@ sudo FT_ROOT=$PWD bash monitoring/up.sh                      # Prometheus, Grafa
 **Résultat principal.** Même fibre (F12) dégradée jusqu'à la falaise FEC, deux fois, avec 1,14 M de paquets clients : **1 567 paquets perdus sans la réponse, 0 avec FiberTwin**. Détection sur la tendance de la marge OSNR (133 s), pull request ouverte par le système (133 s), fusion par un humain après CI verte (221 s), application GitOps sans coupure (250 s), bien avant la falaise (~420 s). Une coupure franche est gérée par OSPF + BFD en moins d'une seconde : le système ouvre seulement un bon d'intervention, sans toucher à la configuration.
 
 **Fonctionnement.** Source de vérité YAML → génération Nornir/Jinja2 → CI (tests unitaires, what-if de capacité et de groupes de risque partagé, Batfish, jumeau temporaire avec tests en direct) → fusion = approbation humaine → déploiement *pull* sur le portable, qui répare aussi la dérive. n8n orchestre, l'API Python décide, un humain approuve.
+
+**Sécurité (tranche 3).** Même chaîne pour une attaque : force brute SSH (ATT&CK T1110) sur un ONT client → règle Sigma → Loki → incident → PR de blocage → même CI → rechargement nftables sur l'OLT 65 s après la fusion → attaquant bloqué et vérifié, puis débloqué par une PR de revert.
+
+**Étude de détection (tranche 4).** La règle de tendance prévient 2,6 à 12 min avant la falaise mais rate les dérives très lentes (0,1 dB/min), qu'un seuil fixe de 3 dB attrape 31,6 min avant : le labo combine les deux et ne rate rien. Sur un lien serré (marge 4 dB), un seuil fixe donne 72 fausses alarmes/jour, Theil-Sen 2.
 
 **Limites assumées.** Modèles optiques du premier ordre ; données issues de mes propres modèles (validation sur équipement réel à faire) ; dégradations accélérées pour la démonstration.

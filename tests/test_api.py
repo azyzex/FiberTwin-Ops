@@ -183,3 +183,22 @@ def test_container_image_ships_every_module_the_api_imports():
             if isinstance(node, ast.ImportFrom) and node.module in ("netgen", "analysis"):
                 for alias in node.names:
                     assert f"{node.module}/{alias.name}.py" in docker, f"{src} imports {node.module}.{alias.name}, not in the image"
+
+
+def test_sweep_moves_an_orphaned_incident_forward(api, monkeypatch):
+    """An incident whose n8n loop was lost (n8n restart) is still verified by the every-minute sweep."""
+    client, prom, gh, sent = api
+    import analysis.app as app_mod
+    monkeypatch.setattr(app_mod, "sigma_alerts", lambda: [
+        {"alertname": "FtSshBruteForceOnACpe", "src_ip": "198.51.100.66", "attack_technique": "T1110", "container": "ont2"}])
+    iid = client.post("/alerts").json()["incident"]
+    client.post(f"/incidents/{iid}/whatif"); client.post(f"/incidents/{iid}/remediation-pr")
+    calls = {"n": 0}
+    def status(i):
+        calls["n"] += 1
+        return {"stage": "deployed"}
+    monkeypatch.setattr(app_mod, "status", status)
+    monkeypatch.setattr(app_mod, "events_of", lambda i: [{"type": "deployed", "ts": "2026-01-01T00:00:00Z"}])
+    monkeypatch.setattr(app_mod, "verify", lambda i: {"recovered": True})
+    r = client.post("/sweep").json()["swept"]
+    assert r == [{iid: {"recovered": True}}] and calls["n"] == 1
