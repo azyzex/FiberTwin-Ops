@@ -1,0 +1,27 @@
+# GENERATED from security/sigma by security/build_rules.py. Do not edit.
+groups:
+- name: fibertwin-sigma
+  interval: 10s
+  rules:
+  - alert: FtNetworkScanFromAHost
+    expr: sum by (src_ip) (count_over_time({job="suricata"} | json | event_type=~`(?i)^alert$` and alert_signature_id=9000001 [1m])) >= 1
+    for: 0s
+    labels:
+      severity: high
+      attack_technique: T1046
+      source: sigma
+    annotations:
+      summary: FiberTwin - network scan from a host (ATT&CK T1046) from {{ $labels.src_ip }}
+      description: A host is scanning the network (for example a compromised / rogue ONT probing its neighbours).
+      sigma_id: 5d1a7e0c-1b7a-4c3e-9f51-7f0a3c1e1046
+  - alert: FtSshBruteForceOnACpe
+    expr: sum by (container, src_ip) (count_over_time({job="cpe"} |~ `(?i)Failed\ password` [1m])) >= 5
+    for: 0s
+    labels:
+      severity: high
+      attack_technique: T1110
+      source: sigma
+    annotations:
+      summary: FiberTwin - SSH brute force on a CPE (ATT&CK T1110) from {{ $labels.src_ip }} on {{ $labels.container }}
+      description: At least 5 failed passwords on one ONT from one source within a minute.
+      sigma_id: 5d1a7e0c-1b7a-4c3e-9f51-7f0a3c1e1110

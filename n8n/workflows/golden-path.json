@@ -40,8 +40,8 @@
    }
   },
   {
-   "id": "311df63e-2c2a-5474-9d79-ed2ff976dd91",
-   "name": "Drain?",
+   "id": "b0f429cb-73fb-5064-abb8-c06f14c59ca3",
+   "name": "Drain or block?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2,
    "position": [
@@ -57,13 +57,13 @@
      },
      "conditions": [
       {
-       "id": "e74cafc2-79d0-517e-aaec-d473887dce06",
-       "leftValue": "={{ $json.action }}",
+       "id": "6ecb2966-68fb-562f-a38e-b5a562e3dbb1",
+       "leftValue": "={{ ['drain', 'block'].includes($json.action) }}",
        "operator": {
-        "type": "string",
-        "operation": "equals"
-       },
-       "rightValue": "drain"
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
       }
      ],
      "combinator": "and"
@@ -190,8 +190,8 @@
    }
   },
   {
-   "id": "ec7b99b2-1b93-50ac-9bc1-50e3c8445984",
-   "name": "Open drain PR",
+   "id": "200719be-1945-5346-ae47-3bb741e588db",
+   "name": "Open remediation PR",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
    "position": [
@@ -200,7 +200,7 @@
    ],
    "parameters": {
     "method": "POST",
-    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/drain-pr",
+    "url": "=http://analysis:8000/incidents/{{ $('Analyse alerts').first().json.incident }}/remediation-pr",
     "options": {
      "timeout": 30000
     }
@@ -467,14 +467,14 @@
    "main": [
     [
      {
-      "node": "Drain?",
+      "node": "Drain or block?",
       "type": "main",
       "index": 0
      }
     ]
    ]
   },
-  "Drain?": {
+  "Drain or block?": {
    "main": [
     [
      {
@@ -518,7 +518,7 @@
    "main": [
     [
      {
-      "node": "Open drain PR",
+      "node": "Open remediation PR",
       "type": "main",
       "index": 0
      }
@@ -532,7 +532,7 @@
     ]
    ]
   },
-  "Open drain PR": {
+  "Open remediation PR": {
    "main": [
     [
      {

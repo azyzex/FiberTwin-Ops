@@ -11,6 +11,12 @@ route:
       group_by: [alertname]
       group_wait: 2s
       continue: true
+    # Sigma alerts from Loki (Slice 3): one notification per attacker
+    - receiver: n8n
+      matchers: [source = "sigma"]
+      group_by: [alertname, src_ip]
+      group_wait: 2s
+      continue: true
     - receiver: slack
 # a link alert explains the path symptoms it causes: send the cause, not every symptom
 inhibit_rules:

@@ -147,3 +147,46 @@ def test_access_never_changes_the_network():
 
 def test_healthy_access_no_incident():
     assert logic.correlate_access(ACC, pon()).fault_class is None
+
+
+# ---------------------------------------------------------------- security (F6)
+def sig(src, tech="T1110", target="ont2"):
+    return {"alertname": "FtSshBruteForceOnACpe", "src_ip": src, "attack_technique": tech, "container": target}
+
+
+def test_external_brute_force_is_blocked():
+    c = logic.correlate_security(ACC, [sig("198.51.100.66")])
+    assert (c.fault_class, c.fibre) == ("F6", "block:198.51.100.66") and "external source" in c.evidence[0]
+    assert logic.decide(c, set(), {}, 0).action == "block"
+
+
+def test_rogue_ont_scan_is_quarantined():
+    c = logic.correlate_security(ACC, [{"alertname": "FtNetworkScanFromAHost", "src_ip": "100.64.10.14",
+                                         "attack_technique": "T1046"}])
+    assert c.fibre == "block:100.64.10.14" and "rogue ONT ont4" in c.evidence[0] and c.links == ["ont4"]
+
+
+def test_never_block_the_service_customers_use():
+    c = logic.correlate_security(ACC, [sig("203.0.113.10")])
+    assert logic.decide(c, set(), {}, 0).action == "ticket"
+
+
+def test_block_edit_is_valid_sot():
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "sot" / "network.yaml").read_text()
+    new = logic.block_sot_text(text, "198.51.100.66", "T1110 SSH brute force on ont2 (INC-1)")
+    sec = yaml.safe_load(new)["security"]["blocklist"]
+    assert sec == [{"ip": "198.51.100.66/32", "reason": "T1110 SSH brute force on ont2 (INC-1)"}]
+    new2 = logic.block_sot_text(new, "100.64.10.14", "T1046 scan")
+    assert len(yaml.safe_load(new2)["security"]["blocklist"]) == 2
+    from netgen import model as m
+    m.validate(yaml.safe_load(new2))
+
+
+def test_blocking_infrastructure_is_refused_by_validation():
+    import pytest
+    from netgen import model as m
+    root = Path(__file__).resolve().parents[1]
+    bad = yaml.safe_load(logic.block_sot_text((root / "sot" / "network.yaml").read_text(), "10.0.0.1", "oops"))
+    with pytest.raises(m.SotError, match="infrastructure"):
+        m.validate(bad)

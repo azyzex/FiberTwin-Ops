@@ -1,0 +1,17 @@
+server: { http_listen_port: 9080, log_level: warn }
+positions: { filename: /tmp/positions.yaml }
+clients: [{ url: http://loki:3100/loki/api/v1/push }]
+scrape_configs:
+  # CPE management SSH logs (sshd runs in each ONT, logging to the container's stdout)
+  - job_name: cpe
+    docker_sd_configs: [{ host: unix:///var/run/docker.sock, refresh_interval: 10s, filters: [{ name: name, values: ["clab-ft-core-ont"] }] }]
+    relabel_configs:
+      - { source_labels: [__meta_docker_container_name], regex: "/clab-ft-core-(.*)", target_label: container }
+      - { target_label: job, replacement: cpe }
+    pipeline_stages:
+      # the attacker's address becomes a label, so Sigma's "group-by src_ip" works without a query-time parser
+      - regex: { expression: "from (?P<src_ip>[0-9.]+) port" }
+      - labels: { src_ip: "" }
+  # Suricata alerts (eve.json, one JSON object per line)
+  - job_name: suricata
+    static_configs: [{ targets: [localhost], labels: { job: suricata, __path__: /var/log/suricata/eve.json } }]

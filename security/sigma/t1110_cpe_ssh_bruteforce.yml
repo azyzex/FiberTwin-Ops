@@ -1,0 +1,23 @@
+title: FiberTwin - failed SSH password on a CPE (ONT)
+id: 5d1a7e0c-1b7a-4c3e-9f51-7f0a3c1e1101
+name: ft_cpe_ssh_failed_password
+status: experimental
+description: One failed password on the management SSH of a customer ONT (sshd log line).
+logsource: { product: linux, service: sshd }
+detection:
+  keywords: ['Failed password']
+  condition: keywords
+level: low
+---
+title: FiberTwin - SSH brute force on a CPE (ATT&CK T1110)
+id: 5d1a7e0c-1b7a-4c3e-9f51-7f0a3c1e1110
+status: experimental
+description: At least 5 failed passwords on one ONT from one source within a minute.
+tags: [attack.credential-access, attack.t1110]
+correlation:
+  type: event_count
+  rules: [ft_cpe_ssh_failed_password]
+  group-by: [container, src_ip]
+  timespan: 1m
+  condition: { gte: 5 }
+level: high

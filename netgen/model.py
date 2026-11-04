@@ -128,6 +128,18 @@ def validate(sot: dict) -> None:
             if (n["splitter"], n["port"]) in ports:
                 errors.append(f"{nid}: splitter port {n['splitter']}:{n['port']} used twice")
             ports.add((n["splitter"], n["port"]))
+    sec = sot.get("security") or {}
+    infra = [ipaddress.ip_network("10.0.0.0/8")]                    # loopbacks + core/uplink links
+    for e in sec.get("blocklist") or []:
+        try:
+            ip = ipaddress.ip_network(e["ip"])
+        except (KeyError, ValueError):
+            errors.append(f"blocklist: bad entry {e}")
+            continue
+        if any(ip.overlaps(n) for n in infra) or ip.prefixlen < 24:
+            errors.append(f"blocklist: {e['ip']} would block infrastructure or too wide (guardrail)")
+        if not e.get("reason"):
+            errors.append(f"blocklist: {e['ip']} needs a reason (audit)")
     if errors:
         raise SotError("; ".join(errors))
 
@@ -176,8 +188,26 @@ def upstreams(sot: dict) -> list[dict]:
             "server_if": sv["up_if"], "server_gw": f"{_hosts(sv['subnet'])[0]}/{snet.prefixlen}",
             "server_net": sv["subnet"], "server": sv["name"], "server_ip": str(snet.network_address + 10),
             "iperf_ports": sv.get("iperf_ports", []),
+            "extra_lans": [],
         })
+        atk = (sot.get("security") or {}).get("attacker")
+        if atk and atk["upstream"] == uid:
+            anet = ipaddress.ip_network(atk["subnet"])
+            res[-1]["extra_lans"].append({"if": atk["up_if"], "gw": f"{_hosts(atk['subnet'])[0]}/{anet.prefixlen}",
+                                          "net": atk["subnet"], "desc": "attacker network (security scenarios)"})
     return res
+
+
+def security(sot: dict) -> dict:
+    """Derived security data: attacker host, CPE SSH, PON isolation, OLT blocklist."""
+    sec = sot.get("security") or {}
+    out = {"attacker": None, "cpe_ssh": sec.get("cpe_ssh"), "pon_isolation": bool(sec.get("pon_isolation")),
+           "blocklist": sec.get("blocklist") or []}
+    if sec.get("attacker"):
+        a = sec["attacker"]
+        net = ipaddress.ip_network(a["subnet"])
+        out["attacker"] = {**a, "ip": f"{net.network_address + 66}/{net.prefixlen}", "gw": _hosts(a["subnet"])[0]}
+    return out
 
 
 def hosts(sot: dict) -> list[dict]:
