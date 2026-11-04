@@ -48,6 +48,7 @@ P = ["src", "dst", "class"]
 PROBE_RTT = Gauge("ft_probe_rtt_ms", "Probe round-trip time (average of the burst)", P)
 PROBE_JIT = Gauge("ft_probe_jitter_ms", "Probe jitter (ping mdev over the burst)", P)
 PROBE_LOSS = Gauge("ft_probe_loss_ratio", "Probe loss ratio (0-1) over the burst", P)
+NFT_DROPS = Gauge("ft_nft_blocked_packets_total", "Packets dropped by the OLT blocklist (nftables counters)", ["node"])
 SCRAPE_OK = Gauge("ft_exporter_last_success_timestamp", "Last successful collection per collector", ["collector"])
 
 
@@ -108,6 +109,11 @@ def collect_links() -> None:
                 NETEM_SENT.labels(*lab).set(int(m.group(1)))
                 NETEM_DROP.labels(*lab).set(int(m.group(2)))
     SCRAPE_OK.labels("links").set(time.time())
+    try:   # security: packets the OLT's blocklist dropped (Slice 3)
+        out = sh("olt1", "nft list chain inet fibertwin forward 2>/dev/null")
+        NFT_DROPS.labels("olt1").set(sum(int(x) for x in re.findall(r"counter packets (\d+)", out)))
+    except Exception:
+        pass
 
 
 def collect_control_plane(sot: dict) -> None:

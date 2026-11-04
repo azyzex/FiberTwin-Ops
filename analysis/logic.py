@@ -17,7 +17,7 @@ OPTICAL_ALERTS = {"FtOsnrMarginTrend", "FtOsnrMarginLow"}
 DOWN_ALERTS = {"FtLinkDown"}
 POWER_DROP_DB = 3.0          # received power this much below design = receiver-side signature
 MARGIN_DROP_DB = 1.0         # margin this much below design = "this link is degrading too"
-ALLOWED_TO_REMEDIATE = {"F1"}  # guardrail 1: only F1 may produce a config change
+ALLOWED_TO_REMEDIATE = {"F1", "F6"}  # guardrail 1: only a gray failure (drain) or an attack (block) changes the network
 
 
 @dataclass
@@ -101,12 +101,16 @@ def decide(c: Correlation, open_drain_fibres: set[str], recent_drains: dict[str,
         why = {"F1b": "receiver-side: a config change can't clean a connector",
                "F2": "fibre cut: OSPF/BFD already rerouted; nothing to change",
                "F3": "access degradation: no protection path in a GPON tree; a technician fixes the segment",
-               "F4": "access cut: no protection path; dispatch a technician to the named segment"}[c.fault_class]
+               "F4": "access cut: no protection path; dispatch a technician to the named segment"}.get(c.fault_class, "not allowed")
         return Decision("ticket", [why])
     if c.fibre in open_drain_fibres:                       # guardrail: one change per element at a time
         return Decision("none", [f"a drain of {c.fibre} is already in progress"])
     if now - recent_drains.get(c.fibre, -1e18) < cooldown_s:   # guardrail: cooldown, no loops
         return Decision("ticket", [f"{c.fibre} was drained less than {cooldown_s / 60:.0f} min ago: escalate to a human"])
+    if c.fault_class == "F6":
+        if any("protected address" in e for e in c.evidence):
+            return Decision("ticket", c.evidence)
+        return Decision("block", [f"block {c.fibre.split(':', 1)[1]} at the OLT: " + c.evidence[0]])
     return Decision("drain", [f"F1 on {c.fibre}: drain {', '.join(c.links)} before the margin reaches the cliff"])
 
 
@@ -189,3 +193,58 @@ def correlate_access(sot: dict, pon: dict[str, dict]) -> Correlation:
                 f"{', '.join(f'{o} -{pon[o]['shift_db']:.1f} dB' for o in deg)} while the other ONTs on {sid} are "
                 f"unchanged: the cause is on the drop{'s' if len(deg) > 1 else ''}"])
     return Correlation(None, None, [], ["access budgets normal"])
+
+
+# ---------------------------------------------------------------- security (Slice 3)
+def protected_ips(sot: dict) -> set[str]:
+    """Addresses a block must never hit: the service customers use (the Internet server) and the hosts of
+    every traffic demand. Infrastructure (10.0.0.0/8) is refused by the SoT validation itself."""
+    import ipaddress
+    out = set()
+    for u in sot["upstreams"].values():
+        out.add(str(ipaddress.ip_network(u["server"]["subnet"]).network_address + 10))
+    for c in sot["customers"].values():
+        out.add(str(ipaddress.ip_network(c["subnet"]).network_address + 10))
+    return out
+
+
+def correlate_security(sot: dict, sigma_alerts: list[dict]) -> Correlation:
+    """sigma_alerts: labels of firing Sigma alerts (from Loki via Alertmanager): alertname, src_ip,
+    attack_technique, container (the target, for T1110)."""
+    import ipaddress
+    if not sigma_alerts:
+        return Correlation(None, None, [], ["no security alert"])
+    by_src: dict[str, list[dict]] = {}
+    for a in sigma_alerts:
+        if a.get("src_ip"):
+            by_src.setdefault(a["src_ip"], []).append(a)
+    if not by_src:
+        return Correlation(None, None, [], ["security alert without a source address"])
+    src, alerts = sorted(by_src.items(), key=lambda kv: -len(kv[1]))[0]
+    techniques = sorted({a.get("attack_technique", "?") for a in alerts})
+    targets = sorted({a["container"] for a in alerts if a.get("container")})
+    acc = sot.get("access") or {}
+    rogue = None
+    for name, n in acc.get("onts", {}).items():           # ONT address = PON subnet + 10 + splitter port
+        olt = acc["olts"][acc["splitters"][n["splitter"]]["olt"]]
+        if str(ipaddress.ip_network(olt["pon_subnet"]).network_address + 10 + n["port"]) == src:
+            rogue = name
+    who = f"rogue ONT {rogue} ({src})" if rogue else f"external source {src}"
+    ev = [f"{who}: ATT&CK {', '.join(techniques)}" + (f" against {', '.join(targets)}" if targets else "")]
+    if src in protected_ips(sot):
+        ev.append(f"{src} is a protected address (serves customers): never blocked automatically")
+        return Correlation("F6", f"block:{src}", targets or [src], ev + ["guardrail: escalate to a human"])
+    return Correlation("F6", f"block:{src}", targets or ([rogue] if rogue else [src]), ev)
+
+
+def remediation_action(fault_class: str | None) -> str:
+    return {"F1": "drain", "F6": "block"}.get(fault_class or "", "ticket")
+
+
+def block_sot_text(sot_text: str, ip: str, reason: str) -> str:
+    """Add one blocklist entry to sot/network.yaml TEXT (keeps comments and layout)."""
+    entry = f"    - {{ ip: {ip}/32, reason: \"{reason}\" }}\n"
+    if "  blocklist: []" in sot_text:
+        return sot_text.replace("  blocklist: []\n", "  blocklist:\n" + entry, 1)
+    i = sot_text.index("  blocklist:\n") + len("  blocklist:\n")
+    return sot_text[:i] + entry + sot_text[i:]

@@ -1,0 +1,8 @@
+# FiberTwin custom signatures (Slice 3). Two small, explainable rules instead of a 40k-rule feed:
+# the lab has 7 GB of RAM and the point is to understand every alert.
+
+# T1046 network service discovery: one source sends SYNs to 30+ destination port/host pairs in 10 s
+alert tcp any any -> $HOME_NET any (msg:"FT T1046 port scan (SYN sweep)"; flow:stateless; flags:S,12; threshold: type both, track by_src, count 30, seconds 10; classtype:attempted-recon; sid:9000001; rev:1;)
+
+# T1110 brute force: one source opens 8+ SSH connections to the PON in 30 s
+alert tcp any any -> $HOME_NET 22 (msg:"FT T1110 SSH connection burst (possible brute force)"; flow:stateless; flags:S,12; threshold: type both, track by_src, count 8, seconds 30; classtype:attempted-admin; sid:9000002; rev:1;)

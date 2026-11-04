@@ -10,6 +10,12 @@ interface {{ u.server_if }}
  description "Internet" server LAN
  ip address {{ u.server_gw }}
 !
+{% for lan in u.extra_lans %}
+interface {{ lan.if }}
+ description {{ lan.desc }}
+ ip address {{ lan.gw }}
+!
+{% endfor %}
 router bgp {{ u.asn }}
  bgp router-id {{ u.router_id }}
  no bgp ebgp-requires-policy
@@ -17,6 +23,9 @@ router bgp {{ u.asn }}
  neighbor {{ u.core_peer_ip }} description eBGP FiberTwin core
  address-family ipv4 unicast
   network {{ u.server_net }}
+{% for lan in u.extra_lans %}
+  network {{ lan.net }}
+{% endfor %}
   neighbor {{ u.core_peer_ip }} activate
  exit-address-family
 !

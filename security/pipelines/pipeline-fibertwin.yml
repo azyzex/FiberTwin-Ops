@@ -1,0 +1,28 @@
+# pySigma processing pipeline: where each log source lives in Loki and how to parse it
+name: fibertwin-loki
+priority: 20
+transformations:
+  - id: sshd_stream
+    type: set_custom_attribute
+    attribute: logsource_loki_selection
+    value: '{job="cpe"}'
+    rule_conditions: [{ type: logsource, service: sshd }]
+  - id: sshd_parser
+    type: set_custom_attribute
+    attribute: loki_parser
+    value: 'regexp "from (?P<src_ip>[0-9.]+) port"'
+    rule_conditions: [{ type: logsource, service: sshd }]
+  - id: suricata_stream
+    type: set_custom_attribute
+    attribute: logsource_loki_selection
+    value: '{job="suricata"}'
+    rule_conditions: [{ type: logsource, product: suricata }]
+  - id: suricata_parser
+    type: set_custom_attribute
+    attribute: loki_parser
+    value: json
+    rule_conditions: [{ type: logsource, product: suricata }]
+  - id: eve_fields
+    type: field_name_mapping
+    mapping: { alert.signature_id: alert_signature_id }
+    rule_conditions: [{ type: logsource, product: suricata }]

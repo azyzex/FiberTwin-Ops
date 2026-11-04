@@ -144,3 +144,28 @@ def test_drop_work_order_names_one_customer(api):
     assert (r["fault_class"], r["fibre"], r["links"]) == ("F3", "drop:ont3", ["ont3"])
     client.post(f"/incidents/{r['incident']}/ticket")
     assert "DROP fibre of ont3" in next(iter(gh.issues.values()))["body"]
+
+
+def test_attack_block_pr(api, monkeypatch):
+    client, prom, gh, sent = api
+    import analysis.app as app_mod
+    monkeypatch.setattr(app_mod, "sigma_alerts", lambda: [
+        {"alertname": "FtSshBruteForceOnACpe", "src_ip": "198.51.100.66", "attack_technique": "T1110",
+         "container": "ont2", "source": "sigma"}])
+    r = client.post("/alerts").json()
+    assert (r["fault_class"], r["fibre"], r["action"]) == ("F6", "block:198.51.100.66", "block")
+    iid = r["incident"]
+    assert client.post(f"/incidents/{iid}/whatif").json()["ok"] is True
+    assert client.post(f"/incidents/{iid}/remediation-pr").json()["number"] == 42
+    edited = yaml.safe_load(gh.files["sot/network.yaml"])
+    assert edited["security"]["blocklist"][0]["ip"] == "198.51.100.66/32"
+    assert any("Block PR ready" in m for m in sent)
+
+
+def test_never_block_the_internet_server(api, monkeypatch):
+    client, *_ = api
+    import analysis.app as app_mod
+    monkeypatch.setattr(app_mod, "sigma_alerts", lambda: [
+        {"alertname": "FtSshBruteForceOnACpe", "src_ip": "203.0.113.10", "attack_technique": "T1110", "container": "ont2"}])
+    r = client.post("/alerts").json()
+    assert r["action"] == "ticket"

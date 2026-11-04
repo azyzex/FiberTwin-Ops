@@ -7,7 +7,7 @@ meta:
   name: ft-core
   core_asn: 65000
   frr_image: quay.io/frrouting/frr:10.2.1
-  host_image: fibertwin/host:0.1
+  host_image: fibertwin/host:0.2
   capacity_mbps: 100          # per core link, 1:1000 scale (= 100 Gbit/s)
   delay_us_per_km: 5          # propagation in fibre
   max_utilisation_pct: 80     # capacity what-if threshold (CI)
@@ -87,3 +87,13 @@ access:
     ont2: { splitter: spl1, port: 2, drop_km: 0.7 }
     ont3: { splitter: spl1, port: 3, drop_km: 1.1 }
     ont4: { splitter: spl1, port: 4, drop_km: 1.6 }
+
+# Security (Slice 3). The attacker and the weak CPE password exist ONLY to run the ATT&CK scenarios
+# (T1110 brute force, T1046 scan) inside this isolated lab.
+security:
+  attacker: { name: atk, upstream: up1, up_if: eth3, subnet: 198.51.100.0/24 }   # "another network on the Internet"
+  cpe_ssh: { onts: [ont1, ont2, ont3, ont4], user: admin, password: admin123 }    # lab-only weak credential
+  pon_isolation: true      # like a real GPON: ONTs can't talk to each other directly, all traffic goes via the OLT
+  # Blocked sources, enforced with nftables on the OLT (forwarded traffic, both directions).
+  # The response playbook (F6) proposes additions here in a pull request; a human approves.
+  blocklist: []

@@ -49,6 +49,27 @@ services:
     ports: ["127.0.0.1:5678:5678"]
     restart: unless-stopped
     mem_limit: 512m
+  loki:
+    # logs + the Sigma-generated alert rules (ruler); Slice 3
+    image: grafana/loki:3.6.11
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./loki/loki.yml:/etc/loki/loki.yml:ro
+      - ./loki/rules:/etc/loki/rules:ro
+      - loki-data:/loki
+    ports: ["127.0.0.1:3100:3100"]
+    restart: unless-stopped
+    mem_limit: 256m
+  promtail:
+    # ships the CPEs' sshd logs and Suricata's eve.json to Loki (Promtail is in maintenance mode upstream; fine for a lab)
+    image: grafana/promtail:3.6.11
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ./promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/fibertwin/suricata:/var/log/suricata:ro
+    restart: unless-stopped
+    mem_limit: 128m
   prometheus:
     image: prom/prometheus:v3.5.0
     command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d", "--web.enable-lifecycle"]
@@ -82,6 +103,7 @@ services:
     restart: unless-stopped
     mem_limit: 256m
 volumes:
+  loki-data:
   analysis-data:
   n8n-data:
   prom-data:

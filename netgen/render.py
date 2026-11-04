@@ -25,6 +25,7 @@ from nornir.plugins.runners import ThreadedRunner
 from . import model
 
 ROOT = model.ROOT
+NL = chr(10)
 OUT = ROOT / "build" / "ft-core"
 ENV = Environment(loader=FileSystemLoader(Path(__file__).parent / "templates"),
                   undefined=StrictUndefined, keep_trailing_newline=True,
@@ -90,6 +91,7 @@ def clab_topology(sot: dict) -> str:
         ex = [f"ip addr add {h['ip']} dev eth1", f"ip route replace default via {h['gw']}"]
         lines += [f"    {h['name']}:", "      kind: linux", f"      image: {meta['host_image']}", f"      exec: {json.dumps(ex)}"]
     acc = model.access(sot)
+    sec = model.security(sot)
     for o in acc["olts"]:
         # the OLT: L3 gateway of the PON; downstream capacity shared by all ONTs (htb on the PON port)
         ex = ["sysctl -w net.ipv4.ip_forward=1", f"ip addr add {o['uplink_ip']} dev {o['uplink_if']}",
@@ -97,7 +99,15 @@ def clab_topology(sot: dict) -> str:
               f"tc qdisc add dev {o['pon_if']} root handle 1: htb default 10",
               f"tc class add dev {o['pon_if']} parent 1: classid 1:10 htb rate {o['down_mbps']}mbit ceil {o['down_mbps']}mbit",
               f"tc qdisc add dev {o['pon_if']} parent 1:10 handle 10: netem delay 0us limit 10000"]
+        if sec["pon_isolation"]:
+            # isolated drops: ONT-to-ONT traffic must hairpin through the OLT (like a real GPON), where
+            # Suricata watches and nftables enforces the blocklist
+            ex += [f"sysctl -w net.ipv4.conf.{o['pon_if']}.proxy_arp=1",
+                   f"sysctl -w net.ipv4.conf.{o['pon_if']}.proxy_arp_pvlan=1",
+                   "sysctl -w net.ipv4.conf.all.send_redirects=0", f"sysctl -w net.ipv4.conf.{o['pon_if']}.send_redirects=0"]
+        ex += ["nft -f /etc/fibertwin/olt.nft"]
         lines += [f"    {o['name']}:", "      kind: linux", f"      image: {meta['host_image']}",
+                  f"      binds: [security/{o['name']}.nft:/etc/fibertwin/olt.nft]",
                   "      labels: { graph-group: access }", f"      exec: {json.dumps(ex)}"]
     for sp in acc["splitters"]:
         ports = [f"eth{n['port'] + 1}" for n in acc["onts"] if n["splitter"] == sp["name"]]
@@ -111,6 +121,8 @@ def clab_topology(sot: dict) -> str:
                    f"tc class add dev {i} parent 1: classid 1:10 htb rate "
                    + (f"{olt['up_mbps']}mbit ceil {olt['up_mbps']}mbit" if i == "eth1" else "1000mbit"),
                    f"tc qdisc add dev {i} parent 1:10 handle 10: netem delay 0us limit 10000"]
+        if sec["pon_isolation"]:
+            ex += [f"bridge link set dev {i} isolated on" for i in ports]
         lines += [f"    {sp['name']}:", "      kind: linux", f"      image: {meta['host_image']}",
                   "      labels: { graph-group: access }", f"      exec: {json.dumps(ex)}"]
     for n in acc["onts"]:
@@ -118,8 +130,17 @@ def clab_topology(sot: dict) -> str:
               "tc qdisc add dev eth1 root handle 1: htb default 10",
               "tc class add dev eth1 parent 1: classid 1:10 htb rate 1000mbit",
               "tc qdisc add dev eth1 parent 1:10 handle 10: netem delay 0us limit 10000"]
+        ssh = sec["cpe_ssh"]
+        if ssh and n["name"] in ssh["onts"]:
+            ex += [f"adduser -D {ssh['user']}", f"sh -c 'echo {ssh['user']}:{ssh['password']} | chpasswd'", "ssh-keygen -A",
+                   "sh -c '/usr/sbin/sshd -D -e -o PasswordAuthentication=yes -o MaxStartups=100 > /proc/1/fd/1 2>&1 &'"]
         lines += [f"    {n['name']}:", "      kind: linux", f"      image: {meta['host_image']}",
                   "      labels: { graph-group: access }", f"      exec: {json.dumps(ex)}"]
+    if sec["attacker"]:
+        a = sec["attacker"]
+        ex = [f"ip addr add {a['ip']} dev eth1", f"ip route replace default via {a['gw']}"]
+        lines += [f"    {a['name']}:", "      kind: linux", f"      image: {meta['host_image']}",
+                  "      labels: { graph-group: attacker }", f"      exec: {json.dumps(ex)}"]
     lines.append("  links:")
     for lid, l in sot["links"].items():
         km = sum(sot["fibres"][f]["length_km"] for f in l["fibres"])
@@ -136,6 +157,9 @@ def clab_topology(sot: dict) -> str:
         lines.append(f"    - endpoints: [\"{olt['name']}:{olt['pon_if']}\", \"{sp['name']}:eth1\"]   # feeder {sp['feeder_km']} km")
     for n in acc["onts"]:
         lines.append(f"    - endpoints: [\"{n['splitter']}:{n['splitter_if']}\", \"{n['name']}:eth1\"]   # drop {n['drop_km']} km")
+    if sec["attacker"]:
+        a = sec["attacker"]
+        lines.append(f"    - endpoints: [\"{a['upstream']}:{a['up_if']}\", \"{a['name']}:eth1\"]   # attacker network")
     return "\n".join(lines) + "\n"
 
 
@@ -146,6 +170,20 @@ def links_tsv(sot: dict) -> str:
         km = sum(sot["fibres"][f]["length_km"] for f in l["fibres"])
         rows.append(f"{lid}\t{l['a']}:{l['a_if']}\t{l['b']}:{l['b_if']}\t{km}\t{km * meta['delay_us_per_km']}\t{meta['capacity_mbps']}mbit")
     return "\n".join(rows) + "\n"
+
+
+def olt_nft(sot: dict) -> str:
+    """nftables on the OLT: drop forwarded traffic from/to every blocked address (both directions)."""
+    sec = model.security(sot)
+    ips = [e["ip"] for e in sec["blocklist"]]
+    out = ["# GENERATED from sot/network.yaml (security.blocklist). Applied with: nft -f",
+           "table inet fibertwin", "delete table inet fibertwin", "table inet fibertwin {",
+           "  set blocked { type ipv4_addr; flags interval; " + (f"elements = {{ {', '.join(ips)} }}; " if ips else "") + "}",
+           "  chain forward { type filter hook forward priority 0; policy accept;",
+           "    ip saddr @blocked counter drop", "    ip daddr @blocked counter drop", "  }", "}"]
+    for e in sec["blocklist"]:
+        out.insert(1, f"# {e['ip']}: {e['reason']}")
+    return NL.join(out) + NL
 
 
 def access_tsv(sot: dict) -> str:
@@ -203,6 +241,8 @@ def render(sot_path: Path = model.SOT, out: Path = OUT) -> Path:
     write(out / f"{sot['meta']['name']}.clab.yml", clab_topology(sot))
     write(out / "links.tsv", links_tsv(sot))
     write(out / "access.tsv", access_tsv(sot))
+    for o in model.access(sot)["olts"]:
+        write(out / "security" / f"{o['name']}.nft", olt_nft(sot))
     write(out / "topology.json", json.dumps(topology_json(sot), indent=1) + "\n")
     return out
 

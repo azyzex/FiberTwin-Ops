@@ -3,7 +3,7 @@
 Kept as code so the workflow is reviewable in a PR. n8n only ORCHESTRATES (order, waits, escalation);
 every decision and every external action is a call to the analysis API (tested with pytest).
 
-  Alertmanager webhook ─► Analyse alerts (API) ─► drain? ─► What-if ─► safe? ─► Open drain PR
+  Alertmanager webhook ─► Analyse alerts (API) ─► drain or block? ─► What-if ─► safe? ─► Open remediation PR
                                                │                                  │
                                                └► ticket? ─► Open work order      ▼
                      ┌──────────────────────────── Wait 20 s ◄──────────────┐  Status (API)
@@ -59,7 +59,7 @@ node("Alertmanager webhook", "n8n-nodes-base.webhook", 2, 0, 300,
      {"httpMethod": "POST", "path": "fibertwin-alerts", "responseMode": "onReceived", "options": {}},
      webhookId=str(uuid.uuid5(uuid.NAMESPACE_URL, "fibertwin-alerts")))
 http("Analyse alerts", "POST", "/alerts", 220, 300, body="={{ JSON.stringify($json.body) }}")
-cond("Drain?", "={{ $json.action }}", STR_EQ, "drain", 440, 300)
+cond("Drain or block?", "={{ ['drain', 'block'].includes($json.action) }}", {"type": "boolean", "operation": "true", "singleValue": True}, None, 440, 300)
 cond("Ticket?", "={{ $json.action }}", STR_EQ, "ticket", 660, 460)
 http("Open work order", "POST", f"/incidents/{INC}/ticket", 880, 460)
 http("What-if", "POST", f"/incidents/{INC}/whatif", 660, 200)
@@ -67,7 +67,7 @@ cond("Safe?", "={{ $json.ok }}", {"type": "boolean", "operation": "true", "singl
 http("Not safe: escalate", "POST", "/notify", 1100, 320,
      body="={{ JSON.stringify({text: ':no_entry: ' + $('Analyse alerts').first().json.incident + ': drain of ' + "
           "$('Analyse alerts').first().json.fibre + ' is NOT safe (' + $json.reasons.join('; ') + '). Human decision needed.'}) }}")
-http("Open drain PR", "POST", f"/incidents/{INC}/drain-pr", 1100, 100)
+http("Open remediation PR", "POST", f"/incidents/{INC}/remediation-pr", 1100, 100)
 wait("Wait 20 s", 20, 1320, 100)
 http("Status", "GET", f"/incidents/{INC}/status", 1540, 100)
 cond("Deployed?", "={{ $json.stage }}", STR_EQ, "deployed", 1760, 100)
@@ -93,12 +93,12 @@ http("Report repair", "POST", "/incidents/{{ $json['Incident ID'] }}/repaired", 
 link("Technician: repaired form", "Report repair")
 
 link("Alertmanager webhook", "Analyse alerts")
-link("Analyse alerts", "Drain?")
-link("Drain?", "What-if", 0); link("Drain?", "Ticket?", 1)
+link("Analyse alerts", "Drain or block?")
+link("Drain or block?", "What-if", 0); link("Drain or block?", "Ticket?", 1)
 link("Ticket?", "Open work order", 0)
 link("What-if", "Safe?")
-link("Safe?", "Open drain PR", 0); link("Safe?", "Not safe: escalate", 1)
-link("Open drain PR", "Wait 20 s")
+link("Safe?", "Open remediation PR", 0); link("Safe?", "Not safe: escalate", 1)
+link("Open remediation PR", "Wait 20 s")
 link("Wait 20 s", "Status")
 link("Status", "Deployed?")
 link("Deployed?", "Settle 60 s", 0); link("Deployed?", "Rejected?", 1)

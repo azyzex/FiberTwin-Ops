@@ -102,6 +102,14 @@ else
       fi
     fi
   done
+  for f in "$B"/security/*.nft; do
+    [ -f "$f" ] || continue
+    olt=$(basename "$f" .nft)
+    cmp -s "$f" "$OLD_BUILD/security/$olt.nft" 2>/dev/null && continue
+    # bind-mounted into the OLT: the file already holds the new rules, nft loads them atomically
+    if docker exec "$P-$olt" nft -f /etc/fibertwin/olt.nft >>"$LOG" 2>&1; then log "APPLY $olt: nftables blocklist reloaded"
+    else log "ERROR $olt: nft reload failed"; fi
+  done
   cmp -s "$B/links.tsv" "$OLD_BUILD/links.tsv" || { bash twin/shape-links.sh >>"$LOG" 2>&1; log "APPLY link shaping updated"; }
   [ "$changed" -eq 0 ] && log "APPLY no router config change in this commit"
 fi

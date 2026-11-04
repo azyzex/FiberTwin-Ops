@@ -33,6 +33,7 @@ from analysis import logic
 from netgen import whatif
 
 PROM = os.getenv("PROM_URL", "http://prometheus:9090")
+AM = os.getenv("AM_URL", "http://alertmanager:9093")
 SOT_PATH = Path(os.getenv("FT_SOT", "/ft/sot/network.yaml"))
 DB = Path(os.getenv("DB_PATH", "/data/incidents.db"))
 REPO = os.getenv("GH_REPO", "azyzex/FiberTwin-Ops")
@@ -40,6 +41,7 @@ GH_TOKEN_FILE = Path(os.getenv("GH_TOKEN_FILE", "/run/secrets/github-token"))
 SLACK_FILE = Path(os.getenv("SLACK_WEBHOOK_FILE", "/run/secrets/slack-webhook"))
 DEPLOYED_SHA = Path(os.getenv("DEPLOYED_SHA_FILE", "/ft/state/deployed_sha"))
 DRAIN_COST = whatif.DRAIN_COST
+NL = chr(10)
 
 app = FastAPI(title="FiberTwin analysis API")
 _alerts_lock = threading.Lock()   # two webhooks at once (L12 + L13) must not open two incidents
@@ -158,6 +160,17 @@ def minutes_to_sensitivity(onts: list[str]) -> float | None:
     return worst
 
 
+def sigma_alerts() -> list[dict]:
+    """Security alerts come from Loki's ruler (Sigma rules) straight to Alertmanager, not via Prometheus."""
+    q = urllib.parse.urlencode({"active": "true", "silenced": "false", "inhibited": "false", "filter": 'source="sigma"'})
+    try:
+        with urllib.request.urlopen(f"{AM}/api/v2/alerts?{q}", timeout=5) as r:
+            return [a["labels"] for a in json.load(r)]
+    except Exception as e:
+        print(f"alertmanager: {e}", flush=True)
+        return []
+
+
 def firing() -> list[dict]:
     return [r["metric"] for r in prom('ALERTS{alertstate="firing"}')]
 
@@ -193,6 +206,8 @@ def _alerts() -> dict:
     c = logic.correlate(s, firing(), telemetry(s))
     if c.fault_class is None and not c.links and s.get("access"):
         c = logic.correlate_access(s, pon_telemetry())          # nothing in the core: look at the access tree
+    if c.fault_class is None and not c.links and s.get("security"):
+        c = logic.correlate_security(s, sigma_alerts())         # nothing optical: an attack?
     if c.fault_class is None and not c.links:
         return {"incident": None, "action": "none", "reasons": c.evidence}
     key = c.fibre or ",".join(c.links)
@@ -227,6 +242,8 @@ def _alerts() -> dict:
 @app.post("/incidents/{iid}/whatif")
 def run_whatif(iid: str) -> dict:
     inc = get_incident(iid)
+    if inc["fault_class"] == "F6":
+        return whatif_block(inc)
     links = json.loads(inc["links"])
     chk = whatif.check_drain(sot(), links, avoid_fibre=inc["fibre"])
     util = {f"{l} {a}->{b}": round(u, 1) for (l, a, b), u in chk.placement.util_pct(sot()["meta"]["capacity_mbps"]).items() if u > 0}
@@ -236,6 +253,68 @@ def run_whatif(iid: str) -> dict:
           f"drain {', '.join(links)}: max utilisation {chk.max_util_pct:.0f}% (limit {sot()['meta']['max_utilisation_pct']}%)"
           + ("" if chk.ok else "; " + "; ".join(chk.reasons)))
     return result
+
+
+def whatif_block(inc) -> dict:
+    """Guardrails for a block: valid, not already blocked, not protected, and the SoT with the block
+    still passes validation (which refuses infrastructure and over-wide ranges)."""
+    from netgen import model as nm
+    s = sot()
+    ip = inc["fibre"].split(":", 1)[1]
+    reasons = []
+    if ip in logic.protected_ips(s):
+        reasons.append(f"{ip} serves customers (protected)")
+    if any(e["ip"].split("/")[0] == ip for e in (s.get("security") or {}).get("blocklist") or []):
+        reasons.append(f"{ip} is already blocked")
+    try:
+        nm.validate(yaml.safe_load(logic.block_sot_text(SOT_PATH.read_text(), ip, "what-if")))
+    except nm.SotError as e:
+        reasons.append(str(e))
+    result = {"ok": not reasons, "reasons": reasons or [f"blocking {ip} at the OLT touches no customer service"],
+              "max_util_pct": None}
+    update(inc["id"], whatif=json.dumps(result))
+    event(inc, "what_if_passed" if result["ok"] else "what_if_failed", "; ".join(result["reasons"]))
+    return result
+
+
+@app.post("/incidents/{iid}/remediation-pr")
+def remediation_pr(iid: str) -> dict:
+    """The playbook's single 'propose a change' step: drain for F1, block for F6."""
+    inc = get_incident(iid)
+    return block_pr(iid) if inc["fault_class"] == "F6" else drain_pr(iid)
+
+
+def block_pr(iid: str) -> dict:
+    inc = get_incident(iid)
+    wi = json.loads(inc["whatif"] or "{}")
+    if not wi.get("ok"):
+        raise HTTPException(409, "guardrail check has not passed")
+    if inc["pr_number"]:
+        return {"pr": inc["pr_url"]}
+    ip = inc["fibre"].split(":", 1)[1]
+    ev = [e["summary"] for e in events_of(iid) if e["type"] in ("detected", "located")]
+    reason = (ev[0].split(": ATT&CK ")[-1] if ev else "attack") + f" ({iid})"
+    main = gh("GET", "/git/ref/heads/main")["object"]["sha"]
+    branch = f"block/{ip.replace('.', '-')}-{int(time.time())}"
+    gh("POST", "/git/refs", {"ref": f"refs/heads/{branch}", "sha": main})
+    f = gh("GET", f"/contents/sot/network.yaml?ref={branch}")
+    text = base64.b64decode(f["content"]).decode()
+    new = logic.block_sot_text(text, ip, reason[:120])
+    gh("PUT", "/contents/sot/network.yaml", {"message": f"Block {ip} at the OLT ({iid})",
+                                              "content": base64.b64encode(new.encode()).decode(), "sha": f["sha"], "branch": branch})
+    body = NL.join([
+        f"**Automated proposal from incident `{iid}`** (fault class F6, attack).", "", "**Evidence**", *[f"- {e}" for e in ev], "",
+        f"**Change**: add `{ip}/32` to `security.blocklist`. The generator renders it into the OLT's nftables set: "
+        "forwarded traffic from and to that address is dropped (both directions).", "",
+        f"**Guardrails passed**: {'; '.join(wi['reasons'])}. Infrastructure (10.0.0.0/8), over-wide ranges and the "
+        "addresses customers depend on can never be blocked (SoT validation + analysis API).", "",
+        "**Approve by merging** after CI is green; the pull-based deployer applies it, then the system checks that the "
+        "attack traffic is being dropped and customers are unaffected.", "", "*Unblock later: revert this PR.*"])
+    pr = gh("POST", "/pulls", {"title": f"Block {ip} at the OLT ({reason[:60]})", "head": branch, "base": "main", "body": body})
+    update(iid, state="blocking", pr_number=pr["number"], pr_url=pr["html_url"])
+    event(inc, "pr_opened", f"PR #{pr['number']}: block {ip} at the OLT", pr["html_url"])
+    slack(f":lock: *{iid}*: {ev[0] if ev else ip}. Block PR ready for approval: {pr['html_url']}")
+    return {"pr": pr["html_url"], "number": pr["number"]}
 
 
 @app.post("/incidents/{iid}/drain-pr")
@@ -329,6 +408,8 @@ def status(iid: str) -> dict:
                 event(inc, "deployed", f"pull-based deployer applied {deployed[:7]} (hitless frr-reload)", once=True)
                 if inc["state"] == "draining":
                     update(iid, state="drained")
+                if inc["state"] == "blocking":
+                    update(iid, state="blocked")
                 return {"stage": "deployed", "deployed_sha": deployed}
         return {"stage": "merged"}
     if pr["state"] == "closed":
@@ -341,6 +422,8 @@ def status(iid: str) -> dict:
 @app.post("/incidents/{iid}/verify")
 def verify(iid: str) -> dict:
     inc = get_incident(iid)
+    if inc["fault_class"] == "F6":
+        return verify_block(inc)
     links = json.loads(inc["links"])
     util = {r["metric"]["link"]: float(r["value"][1]) for r in prom("avg_over_time(ft:link_util_ratio[30s])")}
     loss = {f"{r['metric']['src']}->{r['metric']['dst']}": float(r["value"][1])
@@ -394,6 +477,30 @@ def repaired(iid: str, body: dict | None = None) -> dict:
         except Exception as e:
             print(f"closing issue: {e}", flush=True)
     return {"closed": True}
+
+
+def verify_block(inc) -> dict:
+    """After the block: the OLT is dropping that source's traffic (or the attack stopped), customers unaffected."""
+    ip = inc["fibre"].split(":", 1)[1]
+    dropped = sum(float(r["value"][1]) for r in prom("increase(ft_nft_blocked_packets_total[2m])"))
+    still = [a for a in sigma_alerts() if a.get("src_ip") == ip and a.get("attack_technique") == "T1110"]
+    loss = {f"{r['metric']['src']}->{r['metric']['dst']}": float(r["value"][1])
+            for r in prom("max by (src, dst) (avg_over_time(ft_probe_loss_ratio[30s]))")}
+    lossy = {k: v for k, v in loss.items() if v > 0.01}
+    reasons = [f"OLT dropped {dropped:.0f} packets from/to {ip} in the last 2 min" if dropped > 0
+               else f"no traffic from {ip} reached the PON since the block"]
+    if still:
+        reasons.append(f"brute force from {ip} still reaching a CPE")
+    if lossy:
+        reasons.append(f"customer probes losing packets: {lossy}")
+    ok = not still and not lossy
+    update(inc["id"], verify=json.dumps({"recovered": ok, "reasons": reasons}))
+    if ok:
+        event(inc, "verified", "; ".join(reasons), once=True)
+        slack(f":white_check_mark: *{inc['id']}*: {ip} blocked at the OLT and verified. {reasons[0]}. Unblock: revert {inc['pr_url']}")
+    else:
+        slack(f":warning: *{inc['id']}*: block of {ip} not verified: {'; '.join(reasons)}")
+    return {"recovered": ok, "reasons": reasons}
 
 
 @app.post("/notify")
