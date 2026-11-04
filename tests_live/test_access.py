@@ -2,6 +2,7 @@
 
 The fault tests need the optical agent (http://localhost:8081); CI starts it next to the temporary twin.
 """
+import ipaddress
 import json
 import os
 import time
@@ -15,7 +16,11 @@ from .conftest import sh
 
 AGENT = os.getenv("FT_AGENT_URL", "http://localhost:8081")
 SOT = model.load()
-ONTS = {o["name"]: o["ip"].split("/")[0] for o in model.access(SOT)["onts"]}
+ALL_ONTS = {o["name"]: o["ip"].split("/")[0] for o in model.access(SOT)["onts"]}
+# the intended state includes the security blocklist: a quarantined ONT (F6) MUST be unreachable, the rest served
+_BLOCKED = [ipaddress.ip_network(b["ip"]) for b in model.security(SOT).get("blocklist", [])]
+QUARANTINED = {o: ip for o, ip in ALL_ONTS.items() if any(ipaddress.ip_address(ip) in n for n in _BLOCKED)}
+ONTS = {o: ip for o, ip in ALL_ONTS.items() if o not in QUARANTINED}
 
 
 def reachable(ip: str) -> bool:
@@ -50,6 +55,13 @@ def test_every_ont_reachable_from_the_internet_server():
         wait_for(lambda ip=ip: reachable(ip), 90, f"srv -> {ont} ({ip})")
 
 
+@pytest.mark.skipif(not QUARANTINED, reason="no ONT on the blocklist")
+def test_quarantined_onts_are_cut_off():
+    """A block PR merged: the OLT's nftables must really drop that ONT (enforcement checked, not assumed)."""
+    for ont, ip in QUARANTINED.items():
+        wait_for(lambda ip=ip: not reachable(ip), 60, f"{ont} ({ip}) still reachable although blocked")
+
+
 def test_olt_shapes_the_shared_downstream():
     out = sh("olt1", "tc class show dev eth2").stdout
     assert "rate 2500Kbit" in out or "rate 2.5Mbit" in out, out
@@ -61,10 +73,12 @@ class TestModelledOptics:
         agent("DELETE", "/faults")
 
     def test_drop_cut_takes_down_only_that_ont(self):
-        agent("POST", "/fault/pon", {"segment": "drop:ont3", "extra_db": 15})     # far below sensitivity: LOS
-        wait_for(lambda: not reachable(ONTS["ont3"]), 30, "ont3 unreachable")
-        for o in ("ont1", "ont2", "ont4"):
-            assert reachable(ONTS[o]), o
+        victim = sorted(ONTS)[-2] if len(ONTS) > 1 else sorted(ONTS)[0]   # ont3 normally
+        agent("POST", "/fault/pon", {"segment": f"drop:{victim}", "extra_db": 15})     # far below sensitivity: LOS
+        wait_for(lambda: not reachable(ONTS[victim]), 30, f"{victim} unreachable")
+        for o in ONTS:
+            if o != victim:
+                assert reachable(ONTS[o]), o
 
     def test_feeder_cut_takes_down_every_ont(self):
         agent("POST", "/fault/pon", {"segment": "feeder:spl1", "extra_db": 15})
@@ -72,7 +86,8 @@ class TestModelledOptics:
 
     def test_repair_restores_every_ont(self):
         agent("POST", "/fault/pon", {"segment": "feeder:spl1", "extra_db": 15})
-        wait_for(lambda: not reachable(ONTS["ont1"]), 30, "ont1 down")
+        first = sorted(ONTS)[0]
+        wait_for(lambda: not reachable(ONTS[first]), 30, f"{first} down")
         agent("DELETE", "/faults")
         for o, ip in ONTS.items():
             wait_for(lambda ip=ip: reachable(ip), 40, f"{o} back")

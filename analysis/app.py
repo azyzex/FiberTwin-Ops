@@ -405,7 +405,8 @@ def status(iid: str) -> dict:
         if deployed:
             cmp = gh("GET", f"/compare/{pr['merge_commit_sha']}...{deployed}")
             if cmp.get("status") in ("identical", "ahead"):
-                event(inc, "deployed", f"pull-based deployer applied {deployed[:7]} (hitless frr-reload)", once=True)
+                event(inc, "deployed", f"pull-based deployer applied {deployed[:7]} ("
+                      + ("nftables reload on the OLT" if inc["fault_class"] == "F6" else "hitless frr-reload") + ")", once=True)
                 if inc["state"] == "draining":
                     update(iid, state="drained")
                 if inc["state"] == "blocking":
@@ -501,6 +502,31 @@ def verify_block(inc) -> dict:
     else:
         slack(f":warning: *{inc['id']}*: block of {ip} not verified: {'; '.join(reasons)}")
     return {"recovered": ok, "reasons": reasons}
+
+
+@app.post("/sweep")
+def sweep() -> dict:
+    """Move every open remediation forward from the state stored HERE (SQLite), not from a workflow's memory.
+    n8n calls it every minute: if n8n restarts mid-incident (it did, Slice 3), nothing is lost."""
+    done = []
+    with closing(db()) as c:
+        rows = c.execute("SELECT id FROM incidents WHERE pr_number IS NOT NULL AND state IN "
+                         "('draining','drained','blocking','blocked')").fetchall()
+    for r in rows:
+        iid = r["id"]
+        if any(e["type"] in ("verified", "revert_opened") for e in events_of(iid)):
+            continue
+        st = status(iid)
+        if st.get("stage") == "deployed":
+            dep = next((e for e in events_of(iid) if e["type"] == "deployed"), None)
+            age = time.time() - datetime.fromisoformat(dep["ts"].replace("Z", "+00:00")).timestamp() if dep else 0
+            if age >= 60:                     # let traffic settle before judging
+                done.append({iid: verify(iid)})
+            else:
+                done.append({iid: "deployed, settling"})
+        else:
+            done.append({iid: st.get("stage")})
+    return {"swept": done}
 
 
 @app.post("/notify")
