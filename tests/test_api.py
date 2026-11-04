@@ -9,7 +9,8 @@ import yaml
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parents[1]
-SOT_TEXT = (ROOT / "sot" / "network.yaml").read_text()
+# the live SoT with an empty blocklist: tests check behaviour, not today's blocklist
+SOT_TEXT = re.sub(r"  blocklist:\n(?:    - .*\n)*", "  blocklist: []\n", (ROOT / "sot" / "network.yaml").read_text())
 SOT = yaml.safe_load(SOT_TEXT)
 
 
