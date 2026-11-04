@@ -91,7 +91,7 @@ def restore(marks: dict) -> None:
     sha = marks.get("merge_sha")
     if not sha:
         return
-    branch = f"restore/F12-{int(time.time())}"
+    branch = f"restore/{marks.get('src', 'F12').replace('.', '-')}-{int(time.time())}"
     wt = ROOT.parent / "ft-restore-worktree"           # separate worktree: never touches my working copy
     g = lambda *a, cwd=ROOT: subprocess.run(["git", "-C", str(cwd), *a], check=True, capture_output=True)
     g("fetch", "-q", "origin", "main")
@@ -100,7 +100,7 @@ def restore(marks: dict) -> None:
     g("revert", "--no-edit", sha, cwd=wt)
     g("push", "-q", "-u", "origin", branch, cwd=wt)
     g("worktree", "remove", "--force", str(wt))
-    url = gh("pr", "create", "--base", "main", "--head", branch, "--title", "Restore F12 after repair (revert drain)",
+    url = gh("pr", "create", "--base", "main", "--head", branch, "--title", f"Revert {marks.get('pr', 'drain')} (repair done / unblock)",
              "--body", "Fibre F12 repaired: revert the drain so L12/L13 carry traffic again.").strip().splitlines()[-1]
     log(f"restore PR {url}")
     m: dict = {}

@@ -1,0 +1,12 @@
+{
+ "date": "2026-11-04T00:58:06.574617+00:00",
+ "runs": {
+  "T1110": {
+   "technique": "T1110",
+   "src": "198.51.100.66",
+   "reachable_before": "reachable",
+   "detected_s": 6.7,
+   "incident": "INC-20261104-005813-block:198.51.100.66"
+  }
+ }
+}
