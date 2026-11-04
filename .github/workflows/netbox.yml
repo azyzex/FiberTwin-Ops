@@ -1,0 +1,37 @@
+name: netbox
+
+# Plan Slice 2: NetBox as the inventory view of the source of truth. Git stays the truth (reviewed, tested on
+# a twin); NetBox is what IPAM / cabling / field tools read. On every SoT change: start a throwaway NetBox,
+# sync the SoT into it, sync again (must change nothing = idempotent), then check NetBox == Git.
+# Not a required check: the twin stays the gate.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["netgen/**", "sot/**", "netbox/**", ".github/workflows/netbox.yml"]
+  push:
+    branches: [main]
+    paths: ["netgen/**", "sot/**", "netbox/**"]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: NetBox up, sync twice, check
+        run: bash netbox/up.sh
+      - name: Hand edit in NetBox is reported as drift
+        run: |
+          # move ont3's address to another interface behind Git's back: --check must fail
+          export NETBOX_TOKEN=0123456789abcdef0123456789abcdef01234567
+          python - <<'PY'
+          import os, httpx
+          c = httpx.Client(base_url="http://localhost:8080/api", headers={"Authorization": "Token " + os.environ["NETBOX_TOKEN"]})
+          ip = c.get("/ipam/ip-addresses/", params={"address": "100.64.10.13/24"}).json()["results"][0]
+          other = c.get("/dcim/interfaces/", params={"device": "ont4", "name": "eth1"}).json()["results"][0]
+          c.patch(f"/ipam/ip-addresses/{ip['id']}/", json={"assigned_object_type": "dcim.interface", "assigned_object_id": other["id"]}).raise_for_status()
+          PY
+          if python -m netgen.netbox_sync --check; then echo "drift NOT detected"; exit 1; fi
+          python -m netgen.netbox_sync --apply && python -m netgen.netbox_sync --check   # Git wins again
