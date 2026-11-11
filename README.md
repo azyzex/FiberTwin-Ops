@@ -77,6 +77,25 @@ pytest -q tests && sudo pytest -q tests_live                 # 115 unit + 14 liv
 sudo FT_ROOT=$PWD bash monitoring/up.sh                      # Prometheus, Grafana :3000, optical agent, analysis API, n8n
 ```
 
+## Rebuild from zero (Windows)
+Everything needed is in this repo plus one release; nothing has to be kept on the PC.
+```powershell
+git clone https://github.com/azyzex/FiberTwin-Ops.git; cd FiberTwin-Ops
+powershell -ExecutionPolicy Bypass -File .\install.ps1     # WSL 2 + Debian, Docker, containerlab, Python venv, Node, images
+```
+`install.ps1` checks each step and skips what is already installed, so it is safe to run again (`-InstallDir C:\wsl\debian` if the external SSD is not plugged in, `-NoImages` to skip the ~3 GB image download). The first time on a PC without WSL it asks to be run as Administrator and to reboot once. On a plain Debian/Ubuntu machine, `sudo bash scripts/install.sh && sudo bash scripts/install.sh --images` does the Linux part.
+
+Then, in Debian (`wsl -d Debian`, in the repo folder):
+```bash
+source /opt/ft-venv/bin/activate
+python -m netgen.render && sudo bash twin/deploy.sh && pytest -q tests     # the twin is up and the unit tests pass
+bash deployer/set-slack-webhook.sh                    # secrets are never in Git: typed once, hidden
+sudo bash deployer/set-github-token.sh                #   (fine-grained token: Contents + Pull requests, this repo only)
+sudo FT_ROOT=$PWD bash monitoring/up.sh               # Prometheus, Grafana, n8n, analysis API
+bash n8n/load.sh                                      # loads the playbook into the new n8n
+```
+**Media** (the explainer video, its source project and the raw recordings) are in the [`media-v1` release](https://github.com/azyzex/FiberTwin-Ops/releases/tag/media-v1): `gh release download media-v1 -R azyzex/FiberTwin-Ops -D media`.
+
 ## Limitations (stated, not hidden)
 - The optics are first-order models (ASE-limited NRZ-OOK, no nonlinearities, dispersion or PMD; GPON TDMA/DBA not modelled), and the data come from my own models: validation on real equipment is future work.
 - Degradations are time-compressed (dB per minute) so a demo fits in minutes; real fibres degrade over hours or days, and the trend thresholds must be tuned for that (Slice 4).
@@ -117,3 +136,5 @@ sudo FT_ROOT=$PWD bash monitoring/up.sh                      # Prometheus, Grafa
 **NetDevOps (tranche 2).** 15/15 changements dangereux bloqués en CI, Batfish, dérive de configuration réparée, inventaire NetBox synchronisé depuis Git (une modification manuelle dans NetBox est détectée), miroir GitLab.
 
 **Limites assumées.** Modèles optiques du premier ordre ; données issues de mes propres modèles (validation sur équipement réel à faire) ; dégradations accélérées pour la démonstration.
+
+**Réinstaller depuis zéro (Windows).** `git clone https://github.com/azyzex/FiberTwin-Ops.git`, puis `powershell -ExecutionPolicy Bypass -File .\install.ps1` : WSL 2 + Debian, Docker, containerlab, Python, Node et les images, chaque étape vérifiée avant d'agir (relançable sans risque). Les secrets (webhook Slack, jeton GitHub) se saisissent ensuite en masqué ; la vidéo et les enregistrements sont dans la release [`media-v1`](https://github.com/azyzex/FiberTwin-Ops/releases/tag/media-v1). Détails : section *Rebuild from zero* ci-dessus.
